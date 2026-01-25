@@ -1,5 +1,6 @@
 // ============================================================================
 // DEAL OPTIMIZER - FRONTEND APPLICATION
+// ERA IGNITE STYLE INTERFACE
 // ============================================================================
 
 // Tab Navigation
@@ -24,64 +25,261 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 // ============================================================================
-// BOOK VALUE LOOKUP
+// ERA IGNITE STYLE WORKSHEET - REAL-TIME CALCULATIONS
 // ============================================================================
 
-document.getElementById('lookup-value')?.addEventListener('click', async () => {
-  const year = document.getElementById('dd-year').value;
-  const make = document.getElementById('dd-make').value;
-  const model = document.getElementById('dd-model').value;
-  const mileage = document.getElementById('dd-mileage').value;
-  const condition = document.getElementById('dd-condition').value;
+// State tax rates
+const STATE_TAX_RATES = {
+  'DE': 0,        // Delaware - no sales tax
+  'PA': 0.06,     // Pennsylvania - 6%
+  'MD': 0.06,     // Maryland - 6%
+  'NJ': 0.06625   // New Jersey - 6.625%
+};
 
-  try {
-    const response = await fetch('/api/estimate-value', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ year: parseInt(year), make, model, mileage: parseInt(mileage), condition }),
-    });
+// Set today's date
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  const dealDateEl = document.getElementById('deal-date');
+  if (dealDateEl) dealDateEl.value = today;
 
-    const result = await response.json();
-
-    if (result.success) {
-      document.getElementById('bv-retail').textContent = result.data.retail?.toLocaleString() || '0';
-      document.getElementById('bv-nada').textContent = result.data.nada?.toLocaleString() || '0';
-      document.getElementById('bv-kbb').textContent = result.data.kbb?.toLocaleString() || '0';
-      document.getElementById('book-values').style.display = 'flex';
-
-      // Auto-fill selling price if empty
-      const sellingPriceInput = document.getElementById('dd-selling-price');
-      if (!sellingPriceInput.value || sellingPriceInput.value === '0') {
-        sellingPriceInput.value = result.data.retail || 0;
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching book values:', error);
+  // Set first payment date (45 days from now)
+  const firstPaymentEl = document.getElementById('first-payment-date');
+  if (firstPaymentEl) {
+    const firstPayment = new Date();
+    firstPayment.setDate(firstPayment.getDate() + 45);
+    firstPaymentEl.value = firstPayment.toISOString().split('T')[0];
   }
 });
 
+// All worksheet input fields that trigger recalculation
+const worksheetInputs = [
+  'msrp', 'discount', 'aftermarkets', 'admin-fee', 'vsi-premium', 'esc-premium',
+  'maintenance', 'gap-premium', 'lah-iui', 'prior-lease-bal', 'license-fee', 'dealer-fees',
+  'cash-down', 'deposit', 'total-rebates', 'total-trade-all', 'total-trade-payoff', 'total-def-down',
+  'term', 'sell-rate', 'days-to-first', 'prepaid-fin-charge',
+  'customer-state', 'credit-score', 'monthly-income', 'monthly-debt'
+];
+
+// Add event listeners for real-time calculation
+worksheetInputs.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', calculateWorksheet);
+    el.addEventListener('change', calculateWorksheet);
+  }
+});
+
+// Calculate button
+document.getElementById('btn-calculate')?.addEventListener('click', calculateWorksheet);
+
+// Main calculation function
+function calculateWorksheet() {
+  // Get all input values
+  const msrp = parseFloat(document.getElementById('msrp')?.value) || 0;
+  const discount = parseFloat(document.getElementById('discount')?.value) || 0;
+  const aftermarkets = parseFloat(document.getElementById('aftermarkets')?.value) || 0;
+  const adminFee = parseFloat(document.getElementById('admin-fee')?.value) || 0;
+  const vsiPremium = parseFloat(document.getElementById('vsi-premium')?.value) || 0;
+  const escPremium = parseFloat(document.getElementById('esc-premium')?.value) || 0;
+  const maintenance = parseFloat(document.getElementById('maintenance')?.value) || 0;
+  const gapPremium = parseFloat(document.getElementById('gap-premium')?.value) || 0;
+  const lahIui = parseFloat(document.getElementById('lah-iui')?.value) || 0;
+  const priorLeaseBal = parseFloat(document.getElementById('prior-lease-bal')?.value) || 0;
+  const licenseFee = parseFloat(document.getElementById('license-fee')?.value) || 0;
+  const dealerFees = parseFloat(document.getElementById('dealer-fees')?.value) || 0;
+
+  const cashDown = parseFloat(document.getElementById('cash-down')?.value) || 0;
+  const deposit = parseFloat(document.getElementById('deposit')?.value) || 0;
+  const totalRebates = parseFloat(document.getElementById('total-rebates')?.value) || 0;
+  const totalTradeAll = parseFloat(document.getElementById('total-trade-all')?.value) || 0;
+  const totalTradePayoff = parseFloat(document.getElementById('total-trade-payoff')?.value) || 0;
+  const totalDefDown = parseFloat(document.getElementById('total-def-down')?.value) || 0;
+
+  const term = parseInt(document.getElementById('term')?.value) || 72;
+  const sellRate = parseFloat(document.getElementById('sell-rate')?.value) || 0;
+  const daysToFirst = parseInt(document.getElementById('days-to-first')?.value) || 45;
+  const prepaidFinCharge = parseFloat(document.getElementById('prepaid-fin-charge')?.value) || 0;
+
+  const state = document.getElementById('customer-state')?.value || 'DE';
+  const creditScore = parseInt(document.getElementById('credit-score')?.value) || 680;
+  const monthlyIncome = parseFloat(document.getElementById('monthly-income')?.value) || 5000;
+  const monthlyDebt = parseFloat(document.getElementById('monthly-debt')?.value) || 0;
+
+  // Calculate selling price
+  const sellingPrice = msrp - discount;
+  document.getElementById('selling-price').value = sellingPrice.toFixed(2);
+
+  // Calculate total fees
+  const totalFees = adminFee + licenseFee + dealerFees;
+  document.getElementById('total-fees').value = totalFees.toFixed(2);
+
+  // Calculate F&I products total
+  const fiProducts = vsiPremium + escPremium + maintenance + gapPremium + lahIui;
+
+  // Calculate taxable amount (selling price + aftermarkets + some fees depending on state)
+  const taxableAmount = sellingPrice + aftermarkets;
+  const taxRate = STATE_TAX_RATES[state] || 0;
+  const totalTaxes = taxableAmount * taxRate;
+  document.getElementById('total-taxes').value = totalTaxes.toFixed(2);
+
+  // Calculate total price
+  const totalPrice = sellingPrice + aftermarkets + fiProducts + priorLeaseBal + totalFees + totalTaxes;
+  document.getElementById('total-price').value = totalPrice.toFixed(2);
+
+  // Calculate net trade
+  const totalNetTrade = totalTradeAll - totalTradePayoff;
+  document.getElementById('total-net-trade').value = totalNetTrade.toFixed(2);
+
+  // Calculate total down payment
+  const totalDownPayment = cashDown + deposit + totalRebates + Math.max(0, totalNetTrade) + totalDefDown;
+  document.getElementById('total-down-payment').value = totalDownPayment.toFixed(2);
+
+  // Calculate trade difference (what customer owes after trade)
+  const tradeDifference = totalPrice - totalDownPayment;
+  document.getElementById('trade-difference').value = tradeDifference.toFixed(2);
+
+  // Calculate amount financed
+  let amountFinanced = totalPrice - totalDownPayment;
+  // Add negative equity if trade payoff exceeds trade value
+  if (totalNetTrade < 0) {
+    amountFinanced += Math.abs(totalNetTrade);
+  }
+  amountFinanced = Math.max(0, amountFinanced);
+  document.getElementById('amount-financed').value = amountFinanced.toFixed(2);
+
+  // Calculate payment
+  let monthlyPayment = 0;
+  let financeCharge = 0;
+  let totalOfPayments = 0;
+
+  if (amountFinanced > 0 && term > 0) {
+    if (sellRate > 0) {
+      const monthlyRate = sellRate / 100 / 12;
+      monthlyPayment = (amountFinanced * monthlyRate * Math.pow(1 + monthlyRate, term)) /
+                       (Math.pow(1 + monthlyRate, term) - 1);
+      totalOfPayments = monthlyPayment * term;
+      financeCharge = totalOfPayments - amountFinanced + prepaidFinCharge;
+    } else {
+      // 0% APR
+      monthlyPayment = amountFinanced / term;
+      totalOfPayments = amountFinanced;
+      financeCharge = prepaidFinCharge;
+    }
+  }
+
+  // Update payment fields
+  document.getElementById('apr-display').value = sellRate.toFixed(4);
+  document.getElementById('finance-charge').value = financeCharge.toFixed(2);
+  document.getElementById('total-of-payments').value = totalOfPayments.toFixed(2);
+  document.getElementById('total-sales-price').value = (totalDownPayment + totalOfPayments).toFixed(2);
+  document.getElementById('payment-display').value = monthlyPayment.toFixed(2);
+
+  // Calculate AOR (dealer reserve) - simplified calculation
+  // Typically 2% of amount financed spread over the term, varies by lender
+  const aor = amountFinanced > 0 ? (amountFinanced * 0.02 * (term / 12)) : 0;
+  document.getElementById('aor').value = aor.toFixed(2);
+
+  // Calculate metrics
+  const vehicleValue = sellingPrice > 0 ? sellingPrice : msrp;
+  const ltv = vehicleValue > 0 ? (amountFinanced / vehicleValue) * 100 : 0;
+  const pti = monthlyIncome > 0 ? (monthlyPayment / monthlyIncome) * 100 : 0;
+  const dti = monthlyIncome > 0 ? ((monthlyDebt + monthlyPayment) / monthlyIncome) * 100 : 0;
+
+  // Update metrics display
+  updateMetricDisplay('ltv-display', ltv.toFixed(1) + '%', ltv);
+  updateMetricDisplay('pti-display', pti.toFixed(1) + '%', pti);
+  updateMetricDisplay('dti-display', dti.toFixed(1) + '%', dti);
+  updateMetricDisplay('tier-display', getCreditTier(creditScore), creditScore);
+
+  // Update first payment date based on days to first
+  const dealDate = document.getElementById('deal-date')?.value;
+  if (dealDate && daysToFirst) {
+    const firstPaymentDate = new Date(dealDate);
+    firstPaymentDate.setDate(firstPaymentDate.getDate() + daysToFirst);
+    document.getElementById('first-payment-date').value = firstPaymentDate.toISOString().split('T')[0];
+  }
+
+  return {
+    sellingPrice,
+    totalPrice,
+    amountFinanced,
+    monthlyPayment,
+    totalDownPayment,
+    ltv,
+    pti,
+    dti,
+    creditScore,
+    term,
+    sellRate
+  };
+}
+
+function updateMetricDisplay(id, text, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  el.textContent = text;
+  el.classList.remove('pass', 'warn', 'fail');
+
+  // Color coding based on metric type and value
+  if (id === 'ltv-display') {
+    if (value <= 100) el.classList.add('pass');
+    else if (value <= 120) el.classList.add('warn');
+    else el.classList.add('fail');
+  } else if (id === 'pti-display') {
+    if (value <= 12) el.classList.add('pass');
+    else if (value <= 15) el.classList.add('warn');
+    else el.classList.add('fail');
+  } else if (id === 'dti-display') {
+    if (value <= 40) el.classList.add('pass');
+    else if (value <= 50) el.classList.add('warn');
+    else el.classList.add('fail');
+  } else if (id === 'tier-display') {
+    if (value >= 700) el.classList.add('pass');
+    else if (value >= 620) el.classList.add('warn');
+    else el.classList.add('fail');
+  }
+}
+
+function getCreditTier(score) {
+  if (score >= 750) return 'Super-Prime';
+  if (score >= 700) return 'Prime';
+  if (score >= 650) return 'Near-Prime';
+  if (score >= 550) return 'Subprime';
+  return 'Deep Subprime';
+}
+
 // ============================================================================
-// DEAL ANALYSIS
+// LENDER ANALYSIS
 // ============================================================================
 
-document.getElementById('analyze-deal')?.addEventListener('click', async () => {
+document.getElementById('btn-analyze')?.addEventListener('click', async () => {
+  // Get current worksheet values
+  const worksheetData = calculateWorksheet();
+
+  const vehicleYear = parseInt(document.getElementById('vehicle-year')?.value) || 2024;
+  const vehicleMake = document.getElementById('vehicle-make')?.value || 'GMC';
+  const vehicleModel = document.getElementById('vehicle-model')?.value || 'Terrain';
+  const isCertified = document.getElementById('is-cert')?.checked || false;
+  const isUsed = document.getElementById('is-used')?.checked || false;
+
   const params = {
-    vehicleYear: parseInt(document.getElementById('dd-year').value),
-    vehicleMake: document.getElementById('dd-make').value,
-    vehicleModel: document.getElementById('dd-model').value,
-    vehicleMileage: parseInt(document.getElementById('dd-mileage').value),
-    vehicleCondition: document.getElementById('dd-condition').value,
-    certified: document.getElementById('dd-certified').checked,
-    sellingPrice: parseFloat(document.getElementById('dd-selling-price').value),
-    tradeValue: parseFloat(document.getElementById('dd-trade-value').value) || 0,
-    tradePayoff: parseFloat(document.getElementById('dd-trade-payoff').value) || 0,
-    cashDown: parseFloat(document.getElementById('dd-cash-down').value) || 0,
-    rebates: parseFloat(document.getElementById('dd-rebates').value) || 0,
-    creditScore: parseInt(document.getElementById('dd-credit-score').value),
-    monthlyIncome: parseFloat(document.getElementById('dd-monthly-income').value),
-    monthlyDebt: parseFloat(document.getElementById('dd-monthly-debt').value) || 0,
-    customerState: document.getElementById('dd-state').value,
-    requestedTerm: parseInt(document.getElementById('dd-term').value),
+    vehicleYear,
+    vehicleMake,
+    vehicleModel,
+    vehicleMileage: isUsed ? 35000 : 0,
+    vehicleCondition: 'good',
+    certified: isCertified,
+    sellingPrice: worksheetData.sellingPrice,
+    tradeValue: parseFloat(document.getElementById('total-trade-all')?.value) || 0,
+    tradePayoff: parseFloat(document.getElementById('total-trade-payoff')?.value) || 0,
+    cashDown: parseFloat(document.getElementById('cash-down')?.value) || 0,
+    rebates: parseFloat(document.getElementById('total-rebates')?.value) || 0,
+    creditScore: worksheetData.creditScore,
+    monthlyIncome: parseFloat(document.getElementById('monthly-income')?.value) || 5000,
+    monthlyDebt: parseFloat(document.getElementById('monthly-debt')?.value) || 0,
+    customerState: document.getElementById('customer-state')?.value || 'DE',
+    requestedTerm: worksheetData.term,
   };
 
   try {
@@ -94,7 +292,7 @@ document.getElementById('analyze-deal')?.addEventListener('click', async () => {
     const result = await response.json();
 
     if (result.success) {
-      displayDealResults(result.data);
+      displayLenderAnalysis(result.data, worksheetData);
     } else {
       alert('Error: ' + result.error);
     }
@@ -104,28 +302,67 @@ document.getElementById('analyze-deal')?.addEventListener('click', async () => {
   }
 });
 
-function displayDealResults(data) {
-  // Show results section
-  document.getElementById('deal-results').style.display = 'block';
+function displayLenderAnalysis(data, worksheetData) {
+  // Show results sections
+  document.getElementById('lender-analysis').style.display = 'block';
+  document.getElementById('payment-grid-section').style.display = 'block';
 
-  // Update metrics
-  document.getElementById('result-amount-financed').textContent = '$' + data.deal.amountFinanced.toLocaleString();
-  document.getElementById('result-ltv').textContent = data.deal.ltv.toFixed(1) + '%';
-  document.getElementById('result-credit-tier').textContent = data.customer.creditTier.toUpperCase();
-  document.getElementById('result-best-rate').textContent =
-    data.lenderRecommendations.length > 0 ? data.lenderRecommendations[0].apr.toFixed(2) + '%' : 'N/A';
-
-  // Update lender table
+  // Calculate reserve for each lender
   const lenderTable = document.querySelector('#lender-table tbody');
-  lenderTable.innerHTML = data.lenderRecommendations.map(rec => `
-    <tr>
-      <td><strong>${rec.lender}</strong><br><small>${rec.lenderType}</small></td>
-      <td>${rec.apr.toFixed(2)}%</td>
-      <td>$${rec.monthlyPayment.toFixed(2)}</td>
-      <td><span class="badge badge-${getConfidenceBadge(rec.confidence)}">${rec.confidence}</span></td>
-      <td><span class="badge badge-${getStatusBadge(rec.status)}">${formatStatus(rec.status)}</span></td>
-    </tr>
-  `).join('');
+  lenderTable.innerHTML = data.lenderRecommendations.map(rec => {
+    // Calculate dealer reserve (spread between buy and sell rate)
+    const buyRate = rec.apr;
+    const maxMarkup = 2.5; // Typical max markup
+    const sellRate = Math.min(buyRate + maxMarkup, buyRate * 1.3);
+
+    // Calculate payment at sell rate
+    const amountFinanced = data.deal.amountFinanced;
+    const term = worksheetData.term;
+    const monthlyRate = sellRate / 100 / 12;
+    const sellPayment = (amountFinanced * monthlyRate * Math.pow(1 + monthlyRate, term)) /
+                        (Math.pow(1 + monthlyRate, term) - 1);
+
+    // Estimate reserve
+    const reserve = (sellPayment - rec.monthlyPayment) * term * 0.7; // ~70% of spread goes to dealer
+
+    return `
+      <tr>
+        <td><strong>${rec.lender}</strong><br><small>${rec.lenderType}</small></td>
+        <td>${buyRate.toFixed(2)}%</td>
+        <td>${sellRate.toFixed(2)}%</td>
+        <td>$${sellPayment.toFixed(2)}</td>
+        <td>$${reserve.toFixed(0)}</td>
+        <td><span class="badge badge-${getConfidenceBadge(rec.confidence)}">${rec.confidence}</span></td>
+        <td><button class="btn-select-lender" data-lender="${rec.lender}" data-buy-rate="${buyRate}" data-sell-rate="${sellRate}">Select</button></td>
+      </tr>
+    `;
+  }).join('');
+
+  // Add click handlers for select buttons
+  document.querySelectorAll('.btn-select-lender').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lenderName = btn.dataset.lender;
+      const sellRate = parseFloat(btn.dataset.sellRate);
+
+      // Update the selected lender dropdown
+      const lenderOptions = Array.from(document.getElementById('selected-lender').options);
+      const matchingOption = lenderOptions.find(opt =>
+        opt.textContent.toLowerCase().includes(lenderName.toLowerCase().split(' ')[0])
+      );
+      if (matchingOption) {
+        document.getElementById('selected-lender').value = matchingOption.value;
+      }
+
+      // Update sell rate
+      document.getElementById('sell-rate').value = sellRate.toFixed(2);
+
+      // Recalculate
+      calculateWorksheet();
+
+      // Scroll to top of worksheet
+      document.querySelector('.worksheet-header').scrollIntoView({ behavior: 'smooth' });
+    });
+  });
 
   // Update payment grid
   const paymentGrid = document.querySelector('#payment-grid tbody');
@@ -133,13 +370,16 @@ function displayDealResults(data) {
     <tr>
       <td><strong>${row.rate.toFixed(2)}%</strong></td>
       ${row.payments.map(p => `
-        <td class="${getPTIClass(p.pti)}">$${p.payment.toFixed(0)}<br><small>${p.pti.toFixed(1)}% PTI</small></td>
+        <td class="${getPTIClass(p.pti)}">
+          <strong>$${p.payment.toFixed(0)}</strong><br>
+          <small>${p.pti.toFixed(1)}% PTI</small>
+        </td>
       `).join('')}
     </tr>
   `).join('');
 
   // Scroll to results
-  document.getElementById('deal-results').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('lender-analysis').scrollIntoView({ behavior: 'smooth' });
 }
 
 function getConfidenceBadge(confidence) {
@@ -236,10 +476,10 @@ function displayOptimizerResults(data) {
 
   // Current Metrics
   const metrics = data.currentMetrics;
-  updateMetricCard('metric-ltv', metrics.currentLTV.toFixed(1) + '%', getLTVStatus(metrics.currentLTV));
-  updateMetricCard('metric-pti', metrics.currentPTI.toFixed(1) + '%', getPTIStatus(metrics.currentPTI));
-  updateMetricCard('metric-dti', metrics.currentDTI.toFixed(1) + '%', getDTIStatus(metrics.currentDTI));
-  updateMetricCard('metric-payment', '$' + metrics.currentPayment.toFixed(0), '');
+  updateOptimizerMetricCard('metric-ltv', metrics.currentLTV.toFixed(1) + '%', getLTVStatus(metrics.currentLTV));
+  updateOptimizerMetricCard('metric-pti', metrics.currentPTI.toFixed(1) + '%', getPTIOptimizerStatus(metrics.currentPTI));
+  updateOptimizerMetricCard('metric-dti', metrics.currentDTI.toFixed(1) + '%', getDTIStatus(metrics.currentDTI));
+  updateOptimizerMetricCard('metric-payment', '$' + metrics.currentPayment.toFixed(0), '');
 
   // ADE Results
   const adeTable = document.querySelector('#ade-table tbody');
@@ -330,7 +570,7 @@ function displayOptimizerResults(data) {
   document.getElementById('optimizer-results').scrollIntoView({ behavior: 'smooth' });
 }
 
-function updateMetricCard(id, value, status) {
+function updateOptimizerMetricCard(id, value, status) {
   const card = document.getElementById(id);
   card.querySelector('.metric-value').textContent = value;
   card.querySelector('.metric-status').textContent = status;
@@ -352,7 +592,7 @@ function getLTVStatus(ltv) {
   return 'HIGH RISK';
 }
 
-function getPTIStatus(pti) {
+function getPTIOptimizerStatus(pti) {
   if (pti <= 12) return 'EXCELLENT';
   if (pti <= 15) return 'GOOD';
   if (pti <= 18) return 'MARGINAL';
@@ -462,3 +702,10 @@ document.getElementById('calculate-payment')?.addEventListener('click', async ()
 if (document.querySelector('.tab[data-tab="lenders"]')?.classList.contains('active')) {
   loadLenders();
 }
+
+// Run initial calculation on page load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    calculateWorksheet();
+  }, 100);
+});
