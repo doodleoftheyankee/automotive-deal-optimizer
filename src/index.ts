@@ -56,6 +56,19 @@ export {
   determineVehicleClass,
 } from './inventory/vehicle-manager';
 
+// Export Approval Optimizer
+export {
+  AutoDecisioningEngine,
+  autoDecisioningEngine,
+  calculateFICOAutoScore,
+  getAutoApprovalThresholds,
+} from './approval/auto-approval-engine';
+
+export {
+  DealStructureOptimizer,
+  dealStructureOptimizer,
+} from './approval/deal-structure-optimizer';
+
 // ============================================================================
 // QUICK START FUNCTIONS
 // ============================================================================

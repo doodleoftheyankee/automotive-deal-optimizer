@@ -23,6 +23,7 @@ import {
   estimateBookValues,
   determineVehicleClass,
 } from './inventory/vehicle-manager';
+import { runApprovalOptimizer } from './approval/approval-cli';
 
 const program = new Command();
 
@@ -566,6 +567,18 @@ program
     }
 
     console.log('\n');
+  });
+
+// ============================================================================
+// AUTO-APPROVAL OPTIMIZER COMMAND
+// ============================================================================
+
+program
+  .command('optimize')
+  .alias('approval')
+  .description('Auto-Approval Optimizer - Structure deals for automatic lender approval')
+  .action(async () => {
+    await runApprovalOptimizer();
   });
 
 // ============================================================================
