@@ -9,7 +9,9 @@ A comprehensive deal structuring tool designed to replicate ERA Ignite F&I Deski
 - **Interactive Deal Desking** - Full F&I workflow with payment calculations
 - **13 Pre-Configured Lenders** - Credit tier requirements, rates, and approval criteria
 - **Smart Lender Matching** - Automatically matches deals to best lenders based on credit profile
-- **Approval Optimization** - Suggests deal adjustments to improve approval odds
+- **Auto-Approval Optimizer** - Mimics lender ADEs to show exactly how to structure deals for automatic approval
+- **FICO Auto Score Simulation** - See the auto-enhanced credit score lenders actually use
+- **ADE Decision Simulation** - Run your deal through all 13 lender decision engines
 - **Payment Grid** - ERA Ignite-style payment matrix across rates and terms
 - **Scenario Comparison** - Compare multiple deal structures side-by-side
 - **What-If Analysis** - Explore how changes affect deal approval
@@ -80,6 +82,23 @@ npm run dev lenders -t subprime
 npm run dev tiers
 ```
 
+### Auto-Approval Optimizer (NEW!)
+
+The most powerful feature - see exactly how to structure deals for automatic lender approval:
+
+```bash
+npm start optimize
+# or
+npm start approval
+```
+
+This tool:
+1. **Calculates FICO Auto Score** - The auto-enhanced score lenders actually use
+2. **Runs ADE Simulation** - Tests your deal against all 13 lender decision engines
+3. **Shows Auto-Approval Thresholds** - Exact LTV, PTI, DTI limits for instant approval
+4. **Generates Optimization Plan** - Specific steps to convert conditional to auto-approval
+5. **Finds Sweet Spot** - Optimal deal structure for highest approval probability
+
 ## Programmatic Usage
 
 ```typescript
@@ -147,6 +166,38 @@ The system calculates and evaluates:
 
 Each lender has maximum thresholds for these ratios.
 
+## How Auto-Approval Works
+
+Modern lenders use **Automated Decisioning Engines (ADEs)** that make instant credit decisions. This tool simulates that process:
+
+### What Lenders Evaluate (in order of weight)
+
+1. **Credit Score (40%)** - Uses FICO Auto Score, not standard FICO
+2. **LTV Ratio (25%)** - Most critical structural element
+3. **PTI/DTI Ratios (20%)** - Payment affordability
+4. **Vehicle Factors (10%)** - Age, mileage, value
+5. **Stability (5%)** - Time on job, time at residence
+
+### Auto-Approval Triggers
+
+To get **instant auto-approval**, stay within these general thresholds:
+
+| Score Range | Max LTV | Max PTI | Max DTI | Min Down |
+|-------------|---------|---------|---------|----------|
+| 750+ | 120% | 15% | 40% | 0% |
+| 700-749 | 115% | 14% | 43% | 5% |
+| 650-699 | 110% | 12% | 42% | 10% |
+| 550-649 | 105% | 12% | 45% | 15% |
+| Below 550 | 100% | 10% | 40% | 20% |
+
+### Converting Conditional to Auto-Approval
+
+The optimizer shows exactly what changes convert a conditional approval to auto:
+- Increase down payment to reduce LTV
+- Extend term to lower PTI
+- Pre-submit stipulations (POI, POR) with the deal
+- Add a qualified co-signer
+
 ## State Tax Configuration
 
 | State | Sales Tax | Notes |
@@ -179,6 +230,10 @@ src/
 │   └── deal-desk.ts    # Deal desking module
 ├── optimizer/
 │   └── lender-matcher.ts   # Lender matching engine
+├── approval/           # NEW: Auto-Approval Optimizer
+│   ├── auto-approval-engine.ts   # ADE simulation
+│   ├── deal-structure-optimizer.ts # Deal optimization
+│   └── approval-cli.ts           # Interactive optimizer
 ├── inventory/
 │   └── vehicle-manager.ts  # Vehicle/book value management
 ├── scenarios/
