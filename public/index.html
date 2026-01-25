@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Union Park Deal Optimizer</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <h1>Union Park Deal Optimizer</h1>
+        <span class="subtitle">F&I Desking & Auto-Approval Optimizer</span>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="deal-desk">Deal Desk</button>
+      <button class="tab" data-tab="approval-optimizer">Auto-Approval Optimizer</button>
+      <button class="tab" data-tab="lenders">Lenders</button>
+      <button class="tab" data-tab="calculator">Quick Calculator</button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Deal Desk Tab -->
+      <section id="deal-desk" class="tab-content active">
+        <div class="form-grid">
+          <!-- Vehicle Section -->
+          <div class="form-section">
+            <h2>Vehicle Information</h2>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dd-year">Year</label>
+                <input type="number" id="dd-year" value="2022" min="2010" max="2026">
+              </div>
+              <div class="form-group">
+                <label for="dd-make">Make</label>
+                <input type="text" id="dd-make" value="GMC">
+              </div>
+              <div class="form-group">
+                <label for="dd-model">Model</label>
+                <input type="text" id="dd-model" placeholder="Sierra 1500">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dd-mileage">Mileage</label>
+                <input type="number" id="dd-mileage" value="35000">
+              </div>
+              <div class="form-group">
+                <label for="dd-condition">Condition</label>
+                <select id="dd-condition">
+                  <option value="excellent">Excellent</option>
+                  <option value="good" selected>Good</option>
+                  <option value="fair">Fair</option>
+                  <option value="poor">Poor</option>
+                </select>
+              </div>
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="dd-certified"> CPO
+                </label>
+              </div>
+            </div>
+            <div class="book-values" id="book-values" style="display:none;">
+              <span class="book-value"><strong>Retail:</strong> $<span id="bv-retail">0</span></span>
+              <span class="book-value"><strong>NADA:</strong> $<span id="bv-nada">0</span></span>
+              <span class="book-value"><strong>KBB:</strong> $<span id="bv-kbb">0</span></span>
+            </div>
+            <button type="button" class="btn btn-secondary" id="lookup-value">Lookup Book Value</button>
+          </div>
+
+          <!-- Customer Section -->
+          <div class="form-section">
+            <h2>Customer Credit Profile</h2>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dd-credit-score">Credit Score</label>
+                <input type="number" id="dd-credit-score" value="680" min="300" max="850">
+              </div>
+              <div class="form-group">
+                <label for="dd-monthly-income">Monthly Income</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="dd-monthly-income" value="5000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="dd-monthly-debt">Monthly Debt</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="dd-monthly-debt" value="500">
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dd-state">Customer State</label>
+                <select id="dd-state">
+                  <option value="DE">Delaware</option>
+                  <option value="PA">Pennsylvania</option>
+                  <option value="MD">Maryland</option>
+                  <option value="NJ">New Jersey</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deal Structure Section -->
+          <div class="form-section">
+            <h2>Deal Structure</h2>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dd-selling-price">Selling Price</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="dd-selling-price" value="35000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="dd-cash-down">Cash Down</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="dd-cash-down" value="2000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="dd-rebates">Rebates</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="dd-rebates" value="0">
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dd-trade-value">Trade Value (ACV)</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="dd-trade-value" value="0">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="dd-trade-payoff">Trade Payoff</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="dd-trade-payoff" value="0">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="dd-term">Term (months)</label>
+                <select id="dd-term">
+                  <option value="48">48</option>
+                  <option value="60">60</option>
+                  <option value="66">66</option>
+                  <option value="72" selected>72</option>
+                  <option value="75">75</option>
+                  <option value="84">84</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-large" id="analyze-deal">Analyze Deal</button>
+
+        <!-- Results Section -->
+        <div id="deal-results" class="results-section" style="display:none;">
+          <h2>Deal Analysis Results</h2>
+
+          <!-- Deal Metrics -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-label">Amount Financed</span>
+              <span class="metric-value" id="result-amount-financed">$0</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">LTV</span>
+              <span class="metric-value" id="result-ltv">0%</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Credit Tier</span>
+              <span class="metric-value" id="result-credit-tier">-</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Best Rate</span>
+              <span class="metric-value" id="result-best-rate">0%</span>
+            </div>
+          </div>
+
+          <!-- Lender Recommendations -->
+          <h3>Lender Recommendations</h3>
+          <div class="table-container">
+            <table class="data-table" id="lender-table">
+              <thead>
+                <tr>
+                  <th>Lender</th>
+                  <th>Rate</th>
+                  <th>Payment</th>
+                  <th>Confidence</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <!-- Payment Grid -->
+          <h3>Payment Grid</h3>
+          <div class="table-container">
+            <table class="data-table" id="payment-grid">
+              <thead>
+                <tr>
+                  <th>APR</th>
+                  <th>48mo</th>
+                  <th>60mo</th>
+                  <th>72mo</th>
+                  <th>84mo</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Auto-Approval Optimizer Tab -->
+      <section id="approval-optimizer" class="tab-content">
+        <div class="optimizer-intro">
+          <h2>Auto-Approval Optimizer</h2>
+          <p>See exactly how to structure deals for automatic lender approval. This tool simulates lender Automated Decisioning Engines (ADEs).</p>
+        </div>
+
+        <div class="form-grid">
+          <!-- Vehicle Section -->
+          <div class="form-section">
+            <h2>Vehicle Information</h2>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ao-year">Year</label>
+                <input type="number" id="ao-year" value="2022" min="2010" max="2026">
+              </div>
+              <div class="form-group">
+                <label for="ao-make">Make</label>
+                <input type="text" id="ao-make" value="GMC">
+              </div>
+              <div class="form-group">
+                <label for="ao-model">Model</label>
+                <input type="text" id="ao-model" placeholder="Sierra 1500">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ao-mileage">Mileage</label>
+                <input type="number" id="ao-mileage" value="35000">
+              </div>
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="ao-certified"> CPO
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Credit Section -->
+          <div class="form-section">
+            <h2>Credit Profile</h2>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ao-credit-score">Credit Score</label>
+                <input type="number" id="ao-credit-score" value="680" min="300" max="850">
+              </div>
+              <div class="form-group">
+                <label for="ao-monthly-income">Monthly Income</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-monthly-income" value="5000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ao-monthly-debt">Monthly Debt</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-monthly-debt" value="500">
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ao-time-on-job">Time on Job (months)</label>
+                <input type="number" id="ao-time-on-job" value="24">
+              </div>
+              <div class="form-group">
+                <label for="ao-time-at-residence">Time at Residence (months)</label>
+                <input type="number" id="ao-time-at-residence" value="24">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="ao-bankruptcy"> Bankruptcy History
+                </label>
+              </div>
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="ao-repo"> Repo History
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deal Structure Section -->
+          <div class="form-section">
+            <h2>Deal Structure</h2>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ao-selling-price">Selling Price</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-selling-price" value="35000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ao-cash-down">Cash Down</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-cash-down" value="2000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ao-term">Term (months)</label>
+                <select id="ao-term">
+                  <option value="48">48</option>
+                  <option value="60">60</option>
+                  <option value="66">66</option>
+                  <option value="72" selected>72</option>
+                  <option value="84">84</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ao-trade-value">Trade Value</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-trade-value" value="0">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ao-trade-payoff">Trade Payoff</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-trade-payoff" value="0">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ao-fi-products">F&I Products</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-fi-products" value="0">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-large" id="run-optimizer">Run Auto-Approval Analysis</button>
+
+        <!-- Optimizer Results -->
+        <div id="optimizer-results" class="results-section" style="display:none;">
+          <!-- FICO Auto Score -->
+          <div class="fico-section">
+            <h2>FICO Auto Score Analysis</h2>
+            <div class="fico-display">
+              <div class="fico-score">
+                <span class="fico-label">Base Score</span>
+                <span class="fico-value" id="fico-base">680</span>
+              </div>
+              <div class="fico-arrow">→</div>
+              <div class="fico-score highlight">
+                <span class="fico-label">FICO Auto Score</span>
+                <span class="fico-value" id="fico-auto">695</span>
+              </div>
+              <div class="risk-tier">
+                <span class="tier-label">Risk Tier</span>
+                <span class="tier-value" id="risk-tier">B</span>
+              </div>
+            </div>
+            <div class="fico-factors" id="fico-factors"></div>
+          </div>
+
+          <!-- Current Metrics -->
+          <div class="metrics-section">
+            <h2>Current Deal Metrics</h2>
+            <div class="metrics-grid">
+              <div class="metric-card" id="metric-ltv">
+                <span class="metric-label">LTV</span>
+                <span class="metric-value">0%</span>
+                <span class="metric-status">-</span>
+              </div>
+              <div class="metric-card" id="metric-pti">
+                <span class="metric-label">PTI</span>
+                <span class="metric-value">0%</span>
+                <span class="metric-status">-</span>
+              </div>
+              <div class="metric-card" id="metric-dti">
+                <span class="metric-label">DTI</span>
+                <span class="metric-value">0%</span>
+                <span class="metric-status">-</span>
+              </div>
+              <div class="metric-card" id="metric-payment">
+                <span class="metric-label">Est. Payment</span>
+                <span class="metric-value">$0</span>
+                <span class="metric-status">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADE Results -->
+          <div class="ade-section">
+            <h2>Lender ADE Decisions</h2>
+            <div class="table-container">
+              <table class="data-table" id="ade-table">
+                <thead>
+                  <tr>
+                    <th>Lender</th>
+                    <th>Decision</th>
+                    <th>Time</th>
+                    <th>Rate</th>
+                    <th>Score</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Auto-Approval Thresholds -->
+          <div class="thresholds-section">
+            <h2>Auto-Approval Thresholds (Hit these for instant approval)</h2>
+            <div class="table-container">
+              <table class="data-table" id="thresholds-table">
+                <thead>
+                  <tr>
+                    <th>Lender</th>
+                    <th>Max LTV</th>
+                    <th>Max PTI</th>
+                    <th>Max DTI</th>
+                    <th>Min Down</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recommendations -->
+          <div class="recommendations-section">
+            <h2>Optimization Recommendations</h2>
+            <div id="recommendations-list"></div>
+          </div>
+
+          <!-- Sweet Spot -->
+          <div class="sweet-spot-section">
+            <h2>Sweet Spot Deal Structure</h2>
+            <div id="sweet-spot-content"></div>
+          </div>
+
+          <!-- Approval Probability -->
+          <div class="probability-section">
+            <h2>Approval Probability</h2>
+            <div class="probability-meters">
+              <div class="probability-meter">
+                <span class="prob-label">Current Structure</span>
+                <div class="progress-bar">
+                  <div class="progress-fill" id="prob-current"></div>
+                </div>
+                <span class="prob-value" id="prob-current-value">0%</span>
+              </div>
+              <div class="probability-meter">
+                <span class="prob-label">If Optimized</span>
+                <div class="progress-bar">
+                  <div class="progress-fill optimized" id="prob-optimized"></div>
+                </div>
+                <span class="prob-value" id="prob-optimized-value">0%</span>
+              </div>
+            </div>
+            <div class="recommendation-summary" id="prob-recommendation"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lenders Tab -->
+      <section id="lenders" class="tab-content">
+        <h2>Configured Lenders</h2>
+        <div class="filter-bar">
+          <label for="tier-filter">Filter by Credit Tier:</label>
+          <select id="tier-filter">
+            <option value="">All Tiers</option>
+            <option value="super-prime">Super-Prime (750+)</option>
+            <option value="prime">Prime (700-749)</option>
+            <option value="near-prime">Near-Prime (650-699)</option>
+            <option value="subprime">Subprime (550-649)</option>
+            <option value="deep-subprime">Deep Subprime (&lt;550)</option>
+          </select>
+        </div>
+        <div id="lenders-list"></div>
+      </section>
+
+      <!-- Calculator Tab -->
+      <section id="calculator" class="tab-content">
+        <h2>Quick Payment Calculator</h2>
+        <div class="calculator-container">
+          <div class="form-section">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="calc-amount">Amount Financed</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="calc-amount" value="25000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="calc-rate">APR (%)</label>
+                <input type="number" id="calc-rate" value="7.99" step="0.01">
+              </div>
+              <div class="form-group">
+                <label for="calc-term">Term (months)</label>
+                <select id="calc-term">
+                  <option value="36">36</option>
+                  <option value="48">48</option>
+                  <option value="60">60</option>
+                  <option value="72" selected>72</option>
+                  <option value="84">84</option>
+                </select>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="calculate-payment">Calculate</button>
+          </div>
+          <div class="calculator-result" id="calc-result" style="display:none;">
+            <div class="result-item">
+              <span class="result-label">Monthly Payment</span>
+              <span class="result-value" id="calc-monthly">$0.00</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Total Interest</span>
+              <span class="result-value" id="calc-interest">$0.00</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Total of Payments</span>
+              <span class="result-value" id="calc-total">$0.00</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Union Park Deal Optimizer &copy; 2025</p>
+    </footer>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
