@@ -41,6 +41,66 @@ npm install
 npm run build
 ```
 
+## Web Application (Recommended for Teams)
+
+The easiest way to share this tool with other managers is through the web application.
+
+### Start the Web Server
+
+```bash
+npm run start:web
+```
+
+This starts the web application at `http://localhost:3000`
+
+### Sharing with Other Managers on Your Network
+
+1. **Find your computer's IP address:**
+   - Windows: Open Command Prompt and run `ipconfig` - look for "IPv4 Address"
+   - Mac: System Preferences > Network - look for your IP address
+
+2. **Start the server with your IP:**
+   ```bash
+   npm run start:web
+   ```
+
+3. **Share the URL with your team:**
+   - Other managers can access it at `http://YOUR_IP_ADDRESS:3000`
+   - Example: `http://192.168.1.100:3000`
+
+4. **Keep the terminal window open** - The server needs to stay running for others to access it
+
+### Web Application Features
+
+The web interface has four main tabs:
+
+| Tab | Description |
+|-----|-------------|
+| **Deal Desk** | Full F&I deal desking - enter vehicle, customer, and deal info to get instant lender recommendations |
+| **Auto-Approval Optimizer** | Run your deal through all 13 lender ADEs to see approval status and optimization tips |
+| **Lenders** | View all configured lenders with their credit requirements and programs |
+| **Calculator** | Quick payment calculator for on-the-fly estimates |
+
+### Deploying Permanently (Optional)
+
+For a permanent deployment that runs 24/7:
+
+**Option 1: Run in background (simple)**
+```bash
+# Linux/Mac
+nohup npm run start:web &
+
+# Or use PM2 for better management
+npm install -g pm2
+pm2 start dist/server/app.js --name "deal-optimizer"
+pm2 save
+```
+
+**Option 2: Deploy to cloud**
+- Works with Heroku, Railway, Render, or any Node.js hosting
+- Set `PORT` environment variable if needed
+- Requires no database - all calculations are done in real-time
+
 ## Usage
 
 ### Interactive Deal Desk
@@ -230,7 +290,7 @@ src/
 │   └── deal-desk.ts    # Deal desking module
 ├── optimizer/
 │   └── lender-matcher.ts   # Lender matching engine
-├── approval/           # NEW: Auto-Approval Optimizer
+├── approval/           # Auto-Approval Optimizer
 │   ├── auto-approval-engine.ts   # ADE simulation
 │   ├── deal-structure-optimizer.ts # Deal optimization
 │   └── approval-cli.ts           # Interactive optimizer
@@ -238,8 +298,18 @@ src/
 │   └── vehicle-manager.ts  # Vehicle/book value management
 ├── scenarios/
 │   └── deal-comparison.ts  # Scenario comparison tools
+├── server/             # Web Application Server
+│   ├── app.ts          # Express.js server
+│   └── api.ts          # REST API endpoints
 ├── cli.ts              # Command-line interface
 └── index.ts            # Main exports
+
+public/                 # Web Application Frontend
+├── index.html          # Main web interface
+├── css/
+│   └── styles.css      # Application styling
+└── js/
+    └── app.js          # Frontend JavaScript
 ```
 
 ## Scripts
@@ -249,6 +319,7 @@ src/
 | `npm run build` | Compile TypeScript |
 | `npm run dev` | Run CLI with ts-node |
 | `npm start` | Run compiled CLI |
+| `npm run start:web` | Start the web application server |
 | `npm test` | Run tests |
 
 ## Vehicle Support
