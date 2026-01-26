@@ -410,6 +410,144 @@
                 </table>
               </div>
             </div>
+
+            <!-- Payment Target Calculator -->
+            <div class="tools-section">
+              <div class="tools-header">
+                <h3>Payment Tools</h3>
+                <div class="tools-toggle">
+                  <button class="tool-btn active" data-tool="target-calc">Target Payment</button>
+                  <button class="tool-btn" data-tool="multi-compare">Compare Scenarios</button>
+                  <button class="tool-btn" data-tool="payment-menu">Customer Menu</button>
+                </div>
+              </div>
+
+              <!-- Target Payment Calculator -->
+              <div id="target-calc" class="tool-panel active">
+                <div class="target-calc-header">
+                  <p class="tool-description">Work backwards from customer's desired payment to find the right price or terms.</p>
+                </div>
+                <div class="target-calc-grid">
+                  <div class="target-input-section">
+                    <div class="target-field">
+                      <label>Customer's Target Payment</label>
+                      <div class="big-input-wrapper">
+                        <span class="currency">$</span>
+                        <input type="number" id="target-payment" class="big-input" value="500" step="10">
+                        <span class="per-month">/mo</span>
+                      </div>
+                    </div>
+                    <div class="target-options">
+                      <div class="option-group">
+                        <label>APR</label>
+                        <input type="number" id="target-apr" value="7.99" step="0.25">
+                      </div>
+                      <div class="option-group">
+                        <label>Term</label>
+                        <select id="target-term">
+                          <option value="48">48 mo</option>
+                          <option value="60">60 mo</option>
+                          <option value="72" selected>72 mo</option>
+                          <option value="84">84 mo</option>
+                        </select>
+                      </div>
+                      <div class="option-group">
+                        <label>Down Payment</label>
+                        <input type="number" id="target-down" value="0">
+                      </div>
+                    </div>
+                    <button class="era-btn era-btn-primary" id="btn-calc-target">Calculate Max Price</button>
+                  </div>
+                  <div class="target-result-section">
+                    <div class="target-result" id="target-results">
+                      <div class="result-card main-result">
+                        <span class="result-label">Maximum Selling Price</span>
+                        <span class="result-value" id="target-max-price">$0</span>
+                      </div>
+                      <div class="result-details">
+                        <div class="detail-row">
+                          <span>Amount Financed:</span>
+                          <span id="target-amount-financed">$0</span>
+                        </div>
+                        <div class="detail-row">
+                          <span>Total of Payments:</span>
+                          <span id="target-total-payments">$0</span>
+                        </div>
+                        <div class="detail-row">
+                          <span>Total Interest:</span>
+                          <span id="target-total-interest">$0</span>
+                        </div>
+                      </div>
+                      <div class="target-alternatives">
+                        <p class="alt-header">Or to hit $<span id="alt-payment">500</span>/mo:</p>
+                        <div class="alt-options" id="target-alternatives"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Multi-Payment Comparison -->
+              <div id="multi-compare" class="tool-panel">
+                <p class="tool-description">Compare up to 4 different deal scenarios side-by-side.</p>
+                <div class="comparison-controls">
+                  <button class="era-btn" id="btn-add-scenario">+ Add Scenario</button>
+                  <button class="era-btn" id="btn-use-current">Use Current Deal</button>
+                  <button class="era-btn era-btn-danger" id="btn-clear-scenarios">Clear All</button>
+                </div>
+                <div class="comparison-grid" id="comparison-grid">
+                  <!-- Scenario cards will be added here -->
+                  <div class="scenario-card add-card" id="add-scenario-card">
+                    <div class="add-icon">+</div>
+                    <span>Add Scenario</span>
+                  </div>
+                </div>
+                <div class="comparison-summary" id="comparison-summary" style="display:none;">
+                  <h4>Comparison Summary</h4>
+                  <div class="summary-table-wrapper">
+                    <table class="data-table comparison-table">
+                      <thead>
+                        <tr>
+                          <th>Metric</th>
+                          <th id="comp-header-1">Scenario 1</th>
+                          <th id="comp-header-2">Scenario 2</th>
+                          <th id="comp-header-3">Scenario 3</th>
+                          <th id="comp-header-4">Scenario 4</th>
+                        </tr>
+                      </thead>
+                      <tbody id="comparison-tbody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Customer Payment Menu -->
+              <div id="payment-menu" class="tool-panel">
+                <p class="tool-description">Professional payment presentation to show customers. Click "Generate Menu" to create options based on current deal.</p>
+                <div class="menu-controls">
+                  <button class="era-btn era-btn-primary" id="btn-generate-menu">Generate Payment Menu</button>
+                  <button class="era-btn" id="btn-print-menu">Print Menu</button>
+                  <button class="era-btn" id="btn-fullscreen-menu">Full Screen</button>
+                </div>
+                <div class="payment-menu-display" id="payment-menu-display">
+                  <div class="menu-header">
+                    <h2>Payment Options</h2>
+                    <div class="menu-vehicle" id="menu-vehicle">2026 GMC TERRAIN</div>
+                    <div class="menu-price">Selling Price: <span id="menu-selling-price">$0</span></div>
+                  </div>
+                  <div class="menu-options" id="menu-options">
+                    <!-- Payment option cards will be generated here -->
+                    <div class="menu-placeholder">
+                      <p>Click "Generate Payment Menu" to create payment options</p>
+                    </div>
+                  </div>
+                  <div class="menu-footer">
+                    <p>* Payments based on approved credit. Tax, title, and fees included. Subject to lender approval.</p>
+                    <p class="menu-dealer">UNION PARK AUTOMOTIVE GROUP</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

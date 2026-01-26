@@ -708,8 +708,519 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     calculateWorksheet();
     loadInventoryForSelector(); // Load inventory into vehicle selector
+    initPaymentTools(); // Initialize payment tools
   }, 100);
 });
+
+// ============================================================================
+// PAYMENT TOOLS - Target Calculator, Comparison, Customer Menu
+// ============================================================================
+
+function initPaymentTools() {
+  // Tool panel toggle
+  document.querySelectorAll('.tool-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Update active button
+      document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Show corresponding panel
+      const toolId = btn.dataset.tool;
+      document.querySelectorAll('.tool-panel').forEach(panel => panel.classList.remove('active'));
+      document.getElementById(toolId)?.classList.add('active');
+    });
+  });
+
+  // Add scenario card click handler
+  document.getElementById('add-scenario-card')?.addEventListener('click', addNewScenario);
+}
+
+// ============================================================================
+// TARGET PAYMENT CALCULATOR
+// ============================================================================
+
+document.getElementById('btn-calc-target')?.addEventListener('click', calculateTargetPayment);
+
+// Also calculate on input changes
+['target-payment', 'target-apr', 'target-term', 'target-down'].forEach(id => {
+  document.getElementById(id)?.addEventListener('change', calculateTargetPayment);
+});
+
+function calculateTargetPayment() {
+  const targetPayment = parseFloat(document.getElementById('target-payment')?.value) || 0;
+  const apr = parseFloat(document.getElementById('target-apr')?.value) || 0;
+  const term = parseInt(document.getElementById('target-term')?.value) || 72;
+  const downPayment = parseFloat(document.getElementById('target-down')?.value) || 0;
+
+  if (targetPayment <= 0) return;
+
+  // Calculate maximum amount financed from target payment
+  // Payment = P * (r * (1+r)^n) / ((1+r)^n - 1)
+  // Solve for P: P = Payment * ((1+r)^n - 1) / (r * (1+r)^n)
+
+  let maxAmountFinanced;
+  if (apr > 0) {
+    const monthlyRate = apr / 100 / 12;
+    const factor = Math.pow(1 + monthlyRate, term);
+    maxAmountFinanced = targetPayment * (factor - 1) / (monthlyRate * factor);
+  } else {
+    // 0% APR
+    maxAmountFinanced = targetPayment * term;
+  }
+
+  // Calculate max selling price (amount financed + down - fees - tax estimate)
+  const state = document.getElementById('customer-state')?.value || 'DE';
+  const taxRate = STATE_TAX_RATES[state] || 0.0525;
+  const estimatedFees = 600; // Standard doc + fees estimate
+
+  // Reverse calculate: sellingPrice * (1 + taxRate) + fees - down = amountFinanced
+  // sellingPrice = (amountFinanced + down - fees) / (1 + taxRate)
+  const maxSellingPrice = (maxAmountFinanced + downPayment - estimatedFees) / (1 + taxRate);
+
+  const totalOfPayments = targetPayment * term;
+  const totalInterest = totalOfPayments - maxAmountFinanced;
+
+  // Update display
+  document.getElementById('target-max-price').textContent = '$' + Math.max(0, maxSellingPrice).toLocaleString(undefined, {maximumFractionDigits: 0});
+  document.getElementById('target-amount-financed').textContent = '$' + maxAmountFinanced.toLocaleString(undefined, {maximumFractionDigits: 0});
+  document.getElementById('target-total-payments').textContent = '$' + totalOfPayments.toLocaleString(undefined, {maximumFractionDigits: 0});
+  document.getElementById('target-total-interest').textContent = '$' + Math.max(0, totalInterest).toLocaleString(undefined, {maximumFractionDigits: 0});
+  document.getElementById('alt-payment').textContent = targetPayment;
+
+  // Generate alternatives
+  const alternativesEl = document.getElementById('target-alternatives');
+  if (alternativesEl) {
+    const alternatives = [];
+
+    // Alternative 1: Extend term
+    if (term < 84) {
+      const newTerm = term === 48 ? 60 : term === 60 ? 72 : 84;
+      let newAmount;
+      if (apr > 0) {
+        const monthlyRate = apr / 100 / 12;
+        const factor = Math.pow(1 + monthlyRate, newTerm);
+        newAmount = targetPayment * (factor - 1) / (monthlyRate * factor);
+      } else {
+        newAmount = targetPayment * newTerm;
+      }
+      const newPrice = (newAmount + downPayment - estimatedFees) / (1 + taxRate);
+      alternatives.push({
+        action: `Extend to ${newTerm} months`,
+        value: `Max $${Math.max(0, newPrice).toLocaleString(undefined, {maximumFractionDigits: 0})}`
+      });
+    }
+
+    // Alternative 2: Lower rate
+    if (apr > 3) {
+      const lowerRate = Math.max(apr - 2, 0);
+      let newAmount;
+      if (lowerRate > 0) {
+        const monthlyRate = lowerRate / 100 / 12;
+        const factor = Math.pow(1 + monthlyRate, term);
+        newAmount = targetPayment * (factor - 1) / (monthlyRate * factor);
+      } else {
+        newAmount = targetPayment * term;
+      }
+      const newPrice = (newAmount + downPayment - estimatedFees) / (1 + taxRate);
+      alternatives.push({
+        action: `Get ${lowerRate.toFixed(2)}% APR`,
+        value: `Max $${Math.max(0, newPrice).toLocaleString(undefined, {maximumFractionDigits: 0})}`
+      });
+    }
+
+    // Alternative 3: More down payment
+    const extraDown = 2000;
+    const newPrice = (maxAmountFinanced + downPayment + extraDown - estimatedFees) / (1 + taxRate);
+    alternatives.push({
+      action: `Add $${extraDown.toLocaleString()} down`,
+      value: `Max $${Math.max(0, newPrice).toLocaleString(undefined, {maximumFractionDigits: 0})}`
+    });
+
+    alternativesEl.innerHTML = alternatives.map(alt => `
+      <div class="alt-option">
+        <span class="alt-action">${alt.action}</span>
+        <span class="alt-value">${alt.value}</span>
+      </div>
+    `).join('');
+  }
+}
+
+// ============================================================================
+// MULTI-PAYMENT COMPARISON
+// ============================================================================
+
+let comparisonScenarios = [];
+let scenarioIdCounter = 0;
+
+document.getElementById('btn-add-scenario')?.addEventListener('click', addNewScenario);
+document.getElementById('btn-use-current')?.addEventListener('click', addCurrentDealAsScenario);
+document.getElementById('btn-clear-scenarios')?.addEventListener('click', clearAllScenarios);
+
+function addNewScenario() {
+  if (comparisonScenarios.length >= 4) {
+    alert('Maximum 4 scenarios allowed');
+    return;
+  }
+
+  const id = ++scenarioIdCounter;
+  const scenario = {
+    id,
+    name: `Scenario ${comparisonScenarios.length + 1}`,
+    price: 35000,
+    down: 2000,
+    rate: 7.99,
+    term: 72
+  };
+
+  comparisonScenarios.push(scenario);
+  renderScenarios();
+}
+
+function addCurrentDealAsScenario() {
+  if (comparisonScenarios.length >= 4) {
+    alert('Maximum 4 scenarios allowed');
+    return;
+  }
+
+  const worksheetData = calculateWorksheet();
+  const id = ++scenarioIdCounter;
+
+  const scenario = {
+    id,
+    name: 'Current Deal',
+    price: worksheetData.sellingPrice || 0,
+    down: worksheetData.totalDownPayment || 0,
+    rate: worksheetData.sellRate || 0,
+    term: worksheetData.term || 72
+  };
+
+  comparisonScenarios.push(scenario);
+  renderScenarios();
+}
+
+function clearAllScenarios() {
+  comparisonScenarios = [];
+  renderScenarios();
+}
+
+function removeScenario(id) {
+  comparisonScenarios = comparisonScenarios.filter(s => s.id !== id);
+  renderScenarios();
+}
+
+function updateScenario(id, field, value) {
+  const scenario = comparisonScenarios.find(s => s.id === id);
+  if (scenario) {
+    scenario[field] = parseFloat(value) || 0;
+    renderScenarios();
+  }
+}
+
+function renderScenarios() {
+  const grid = document.getElementById('comparison-grid');
+  if (!grid) return;
+
+  // Calculate payments for all scenarios
+  const state = document.getElementById('customer-state')?.value || 'DE';
+  const taxRate = STATE_TAX_RATES[state] || 0.0525;
+  const fees = 600;
+
+  comparisonScenarios.forEach(scenario => {
+    const taxableAmount = scenario.price;
+    const tax = taxableAmount * taxRate;
+    const amountFinanced = scenario.price + tax + fees - scenario.down;
+
+    if (scenario.rate > 0) {
+      const monthlyRate = scenario.rate / 100 / 12;
+      scenario.payment = (amountFinanced * monthlyRate * Math.pow(1 + monthlyRate, scenario.term)) /
+                         (Math.pow(1 + monthlyRate, scenario.term) - 1);
+    } else {
+      scenario.payment = amountFinanced / scenario.term;
+    }
+
+    scenario.amountFinanced = amountFinanced;
+    scenario.totalOfPayments = scenario.payment * scenario.term;
+    scenario.totalInterest = scenario.totalOfPayments - amountFinanced;
+  });
+
+  // Find best (lowest payment)
+  let bestId = null;
+  let lowestPayment = Infinity;
+  comparisonScenarios.forEach(s => {
+    if (s.payment < lowestPayment) {
+      lowestPayment = s.payment;
+      bestId = s.id;
+    }
+  });
+
+  // Render cards
+  let html = comparisonScenarios.map(scenario => `
+    <div class="scenario-card" data-id="${scenario.id}">
+      <button class="btn-remove-scenario" onclick="removeScenario(${scenario.id})">×</button>
+      <div class="scenario-header">
+        <input type="text" class="scenario-name" value="${scenario.name}"
+               onchange="updateScenarioName(${scenario.id}, this.value)">
+        ${scenario.id === bestId ? '<span class="scenario-badge best">BEST</span>' : ''}
+      </div>
+      <div class="scenario-fields">
+        <div class="scenario-field">
+          <label>Selling Price</label>
+          <input type="number" value="${scenario.price}"
+                 onchange="updateScenario(${scenario.id}, 'price', this.value)">
+        </div>
+        <div class="scenario-field">
+          <label>Down Payment</label>
+          <input type="number" value="${scenario.down}"
+                 onchange="updateScenario(${scenario.id}, 'down', this.value)">
+        </div>
+        <div class="scenario-field">
+          <label>APR (%)</label>
+          <input type="number" value="${scenario.rate}" step="0.25"
+                 onchange="updateScenario(${scenario.id}, 'rate', this.value)">
+        </div>
+        <div class="scenario-field">
+          <label>Term (months)</label>
+          <select onchange="updateScenario(${scenario.id}, 'term', this.value)">
+            <option value="48" ${scenario.term === 48 ? 'selected' : ''}>48</option>
+            <option value="60" ${scenario.term === 60 ? 'selected' : ''}>60</option>
+            <option value="72" ${scenario.term === 72 ? 'selected' : ''}>72</option>
+            <option value="84" ${scenario.term === 84 ? 'selected' : ''}>84</option>
+          </select>
+        </div>
+      </div>
+      <div class="scenario-result">
+        <div class="scenario-payment">$${scenario.payment.toFixed(0)}<small>/mo</small></div>
+        <div class="scenario-details">
+          <div class="scenario-detail">
+            <span>Financed:</span>
+            <span>$${scenario.amountFinanced.toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
+          </div>
+          <div class="scenario-detail">
+            <span>Interest:</span>
+            <span>$${scenario.totalInterest.toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // Add the "add card" at the end if less than 4 scenarios
+  if (comparisonScenarios.length < 4) {
+    html += `
+      <div class="scenario-card add-card" id="add-scenario-card" onclick="addNewScenario()">
+        <div class="add-icon">+</div>
+        <span>Add Scenario</span>
+      </div>
+    `;
+  }
+
+  grid.innerHTML = html;
+
+  // Update comparison summary
+  updateComparisonSummary();
+}
+
+function updateScenarioName(id, name) {
+  const scenario = comparisonScenarios.find(s => s.id === id);
+  if (scenario) {
+    scenario.name = name;
+  }
+}
+
+function updateComparisonSummary() {
+  const summary = document.getElementById('comparison-summary');
+  const tbody = document.getElementById('comparison-tbody');
+
+  if (comparisonScenarios.length < 2) {
+    summary.style.display = 'none';
+    return;
+  }
+
+  summary.style.display = 'block';
+
+  // Update headers
+  for (let i = 1; i <= 4; i++) {
+    const header = document.getElementById(`comp-header-${i}`);
+    if (header) {
+      if (comparisonScenarios[i-1]) {
+        header.textContent = comparisonScenarios[i-1].name;
+        header.style.display = '';
+      } else {
+        header.style.display = 'none';
+      }
+    }
+  }
+
+  // Find best values
+  const metrics = ['payment', 'amountFinanced', 'totalInterest', 'totalOfPayments'];
+  const bestValues = {};
+  metrics.forEach(m => {
+    bestValues[m] = Math.min(...comparisonScenarios.map(s => s[m]));
+  });
+
+  // Generate rows
+  const rows = [
+    { label: 'Monthly Payment', key: 'payment', format: v => '$' + v.toFixed(0) },
+    { label: 'Amount Financed', key: 'amountFinanced', format: v => '$' + v.toLocaleString(undefined, {maximumFractionDigits: 0}) },
+    { label: 'Total Interest', key: 'totalInterest', format: v => '$' + v.toLocaleString(undefined, {maximumFractionDigits: 0}) },
+    { label: 'Total of Payments', key: 'totalOfPayments', format: v => '$' + v.toLocaleString(undefined, {maximumFractionDigits: 0}) }
+  ];
+
+  tbody.innerHTML = rows.map(row => {
+    let html = `<tr><td><strong>${row.label}</strong></td>`;
+    for (let i = 0; i < 4; i++) {
+      if (comparisonScenarios[i]) {
+        const value = comparisonScenarios[i][row.key];
+        const isBest = value === bestValues[row.key];
+        html += `<td class="${isBest ? 'highlight' : ''}">${row.format(value)}</td>`;
+      } else {
+        html += '<td style="display:none;"></td>';
+      }
+    }
+    html += '</tr>';
+    return html;
+  }).join('');
+}
+
+// ============================================================================
+// CUSTOMER PAYMENT MENU
+// ============================================================================
+
+document.getElementById('btn-generate-menu')?.addEventListener('click', generatePaymentMenu);
+document.getElementById('btn-print-menu')?.addEventListener('click', printPaymentMenu);
+document.getElementById('btn-fullscreen-menu')?.addEventListener('click', toggleFullscreenMenu);
+
+function generatePaymentMenu() {
+  const worksheetData = calculateWorksheet();
+  const amountFinanced = worksheetData.amountFinanced || 0;
+  const sellingPrice = worksheetData.sellingPrice || 0;
+  const rate = worksheetData.sellRate || 7.99;
+
+  // Get vehicle info
+  const year = document.getElementById('vehicle-year')?.value || '';
+  const make = document.getElementById('vehicle-make')?.value || '';
+  const model = document.getElementById('vehicle-model')?.value || '';
+  const vehicleDesc = `${year} ${make} ${model}`.trim() || 'Vehicle';
+
+  // Update header
+  document.getElementById('menu-vehicle').textContent = vehicleDesc;
+  document.getElementById('menu-selling-price').textContent = '$' + sellingPrice.toLocaleString(undefined, {maximumFractionDigits: 0});
+
+  // Generate payment options for different terms
+  const terms = [48, 60, 72, 84];
+  const options = terms.map(term => {
+    let payment;
+    if (rate > 0) {
+      const monthlyRate = rate / 100 / 12;
+      payment = (amountFinanced * monthlyRate * Math.pow(1 + monthlyRate, term)) /
+                (Math.pow(1 + monthlyRate, term) - 1);
+    } else {
+      payment = amountFinanced / term;
+    }
+
+    const totalOfPayments = payment * term;
+
+    return {
+      term,
+      payment,
+      rate,
+      totalOfPayments,
+      isRecommended: term === 72 // 72 months is usually the sweet spot
+    };
+  });
+
+  // Render options
+  const optionsEl = document.getElementById('menu-options');
+  if (optionsEl) {
+    optionsEl.innerHTML = options.map(opt => `
+      <div class="menu-option-card ${opt.isRecommended ? 'recommended' : ''}">
+        <div class="menu-term">${opt.term} Months</div>
+        <div class="menu-payment">$${opt.payment.toFixed(0)}</div>
+        <div class="menu-payment-label">per month</div>
+        <div class="menu-apr">${opt.rate.toFixed(2)}% APR</div>
+        <div class="menu-total">Total: $${opt.totalOfPayments.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+      </div>
+    `).join('');
+  }
+}
+
+function printPaymentMenu() {
+  const menuDisplay = document.getElementById('payment-menu-display');
+  if (!menuDisplay) return;
+
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Payment Options</title>
+        <style>
+          body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            color: white;
+            padding: 2rem;
+            min-height: 100vh;
+          }
+          .menu-header { text-align: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); }
+          .menu-header h2 { font-size: 1.5rem; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem; }
+          .menu-vehicle { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+          .menu-price { font-size: 1rem; opacity: 0.8; }
+          .menu-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+          .menu-option-card { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 1.5rem; text-align: center; border: 2px solid transparent; }
+          .menu-option-card.recommended { border-color: #22c55e; background: rgba(34, 197, 94, 0.2); }
+          .menu-option-card.recommended::before { content: 'RECOMMENDED'; display: block; font-size: 0.625rem; letter-spacing: 1px; color: #22c55e; margin-bottom: 0.5rem; }
+          .menu-term { font-size: 0.875rem; opacity: 0.8; margin-bottom: 0.5rem; }
+          .menu-payment { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+          .menu-payment-label { font-size: 0.75rem; opacity: 0.7; }
+          .menu-apr { font-size: 0.875rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2); }
+          .menu-total { font-size: 0.75rem; opacity: 0.7; margin-top: 0.5rem; }
+          .menu-footer { text-align: center; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.2); font-size: 0.75rem; opacity: 0.7; }
+          .menu-dealer { margin-top: 1rem; font-size: 0.875rem; font-weight: 600; letter-spacing: 1px; opacity: 1; }
+          @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+        </style>
+      </head>
+      <body>
+        ${menuDisplay.innerHTML}
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.print();
+}
+
+function toggleFullscreenMenu() {
+  const existingFullscreen = document.querySelector('.payment-menu-fullscreen');
+
+  if (existingFullscreen) {
+    existingFullscreen.remove();
+    return;
+  }
+
+  // Generate menu first if not already
+  generatePaymentMenu();
+
+  const menuDisplay = document.getElementById('payment-menu-display');
+  if (!menuDisplay) return;
+
+  // Create fullscreen overlay
+  const fullscreen = document.createElement('div');
+  fullscreen.className = 'payment-menu-fullscreen';
+  fullscreen.innerHTML = `
+    <button class="btn-close-fullscreen" onclick="toggleFullscreenMenu()">×</button>
+    ${menuDisplay.innerHTML}
+  `;
+
+  document.body.appendChild(fullscreen);
+
+  // Close on escape key
+  const escHandler = (e) => {
+    if (e.key === 'Escape') {
+      fullscreen.remove();
+      document.removeEventListener('keydown', escHandler);
+    }
+  };
+  document.addEventListener('keydown', escHandler);
+}
 
 // ============================================================================
 // INVENTORY MANAGEMENT (Client-Side with localStorage)
