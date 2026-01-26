@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Union Park Deal Optimizer - Retail Worksheet</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <h1>Union Park Deal Optimizer</h1>
+        <span class="subtitle">UNION PARK AUTOMOTIVE GROUP</span>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="deal-desk">Retail Worksheet</button>
+      <button class="tab" data-tab="approval-optimizer">Auto-Approval Optimizer</button>
+      <button class="tab" data-tab="lenders">Lenders</button>
+      <button class="tab" data-tab="calculator">Quick Calculator</button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Deal Desk Tab - ERA Ignite Style -->
+      <section id="deal-desk" class="tab-content active">
+        <div class="era-worksheet">
+          <!-- Left Sidebar - Vehicle & Deal Info -->
+          <div class="era-sidebar">
+            <div class="sidebar-section">
+              <div class="sidebar-row">
+                <label>Stock #</label>
+                <input type="text" id="stock-number" class="era-input" placeholder="T12345">
+              </div>
+              <div class="sidebar-row">
+                <label>Date</label>
+                <input type="date" id="deal-date" class="era-input" value="">
+              </div>
+              <div class="sidebar-row">
+                <label>Deal Type</label>
+                <select id="deal-type" class="era-select">
+                  <option value="retail">Retail</option>
+                  <option value="lease">Lease</option>
+                  <option value="cash">Cash</option>
+                </select>
+              </div>
+              <div class="sidebar-row">
+                <label>Lender</label>
+                <select id="selected-lender" class="era-select">
+                  <option value="">Select Lender</option>
+                  <option value="ally">Ally Financial</option>
+                  <option value="gm-financial">GM Financial</option>
+                  <option value="chase">Chase Auto</option>
+                  <option value="wells-fargo">Wells Fargo</option>
+                  <option value="mt-bank">M&T Bank</option>
+                  <option value="bofa">Bank of America</option>
+                  <option value="pnc">PNC Bank</option>
+                  <option value="westlake">Westlake Financial</option>
+                  <option value="psecu">PSECU</option>
+                  <option value="dexsta">Dexsta FCU</option>
+                  <option value="citadel">Citadel Credit Union</option>
+                  <option value="mecu">MECU</option>
+                  <option value="first-help">First Help Financial</option>
+                </select>
+              </div>
+              <div class="sidebar-row">
+                <label>Status</label>
+                <select id="deal-status" class="era-select">
+                  <option value="normal">Normal</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="funded">Funded</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="sidebar-divider"></div>
+
+            <!-- Vehicle Info -->
+            <div class="sidebar-section">
+              <div class="sidebar-row checkbox-row">
+                <label><input type="checkbox" id="is-used"> Used</label>
+                <label><input type="checkbox" id="is-demo"> Demo</label>
+                <label><input type="checkbox" id="is-cert"> Cert.</label>
+              </div>
+              <div class="sidebar-row">
+                <label>Year</label>
+                <input type="number" id="vehicle-year" class="era-input era-input-sm" value="2026" min="2010" max="2027">
+              </div>
+              <div class="sidebar-row">
+                <label>Make</label>
+                <input type="text" id="vehicle-make" class="era-input" value="GMC">
+              </div>
+              <div class="sidebar-row">
+                <label>Model</label>
+                <input type="text" id="vehicle-model" class="era-input" placeholder="TERRAIN">
+              </div>
+              <div class="sidebar-row">
+                <label>Trim</label>
+                <input type="text" id="vehicle-trim" class="era-input" placeholder="SLE AWD">
+              </div>
+            </div>
+
+            <div class="sidebar-divider"></div>
+
+            <!-- Customer Info -->
+            <div class="sidebar-section">
+              <div class="sidebar-row">
+                <label>Customer</label>
+                <input type="text" id="customer-last" class="era-input" placeholder="Last Name">
+              </div>
+              <div class="sidebar-row">
+                <label></label>
+                <input type="text" id="customer-first" class="era-input" placeholder="First Name">
+              </div>
+              <div class="sidebar-row">
+                <label>State</label>
+                <select id="customer-state" class="era-select">
+                  <option value="DE">DE</option>
+                  <option value="PA">PA</option>
+                  <option value="MD">MD</option>
+                  <option value="NJ">NJ</option>
+                </select>
+              </div>
+              <div class="sidebar-row">
+                <label>Credit Score</label>
+                <input type="number" id="credit-score" class="era-input era-input-sm" value="680" min="300" max="850">
+              </div>
+              <div class="sidebar-row">
+                <label>Monthly Income</label>
+                <input type="number" id="monthly-income" class="era-input" value="5000">
+              </div>
+              <div class="sidebar-row">
+                <label>Monthly Debt</label>
+                <input type="number" id="monthly-debt" class="era-input" value="500">
+              </div>
+            </div>
+
+            <div class="sidebar-divider"></div>
+
+            <!-- Trade Info -->
+            <div class="sidebar-section">
+              <div class="sidebar-label">Trade-In Vehicle</div>
+              <div class="sidebar-row">
+                <label>Year</label>
+                <input type="number" id="trade-year" class="era-input era-input-sm" placeholder="2020">
+              </div>
+              <div class="sidebar-row">
+                <label>Make/Model</label>
+                <input type="text" id="trade-vehicle" class="era-input" placeholder="CHEVROLET EQUINOX">
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Worksheet Area -->
+          <div class="era-main">
+            <div class="worksheet-header">
+              <h2>Retail Worksheet</h2>
+              <div class="worksheet-actions">
+                <button class="era-btn" id="btn-calculate">Calculate</button>
+                <button class="era-btn era-btn-primary" id="btn-analyze">Analyze Lenders</button>
+              </div>
+            </div>
+
+            <div class="worksheet-grid">
+              <!-- Column 1: Sales Price -->
+              <div class="worksheet-column">
+                <div class="column-header">Sales Price</div>
+                <div class="field-row">
+                  <label>MSRP</label>
+                  <input type="number" id="msrp" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Discount</label>
+                  <input type="number" id="discount" class="era-field highlight-blue" value="0" step="0.01">
+                </div>
+                <div class="field-row total-row">
+                  <label>Selling Price</label>
+                  <input type="number" id="selling-price" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row">
+                  <label>Aftermarkets</label>
+                  <input type="number" id="aftermarkets" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>ADMIN</label>
+                  <input type="number" id="admin-fee" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>VSI Premium</label>
+                  <input type="number" id="vsi-premium" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>ESC Premium</label>
+                  <input type="number" id="esc-premium" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Maintenance</label>
+                  <input type="number" id="maintenance" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>GAP Premium</label>
+                  <input type="number" id="gap-premium" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>LAH/IUI</label>
+                  <input type="number" id="lah-iui" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Prior Lease Bal</label>
+                  <input type="number" id="prior-lease-bal" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>License Fee</label>
+                  <input type="number" id="license-fee" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Dealer Fees</label>
+                  <input type="number" id="dealer-fees" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row subtotal-row">
+                  <label>Total Fees</label>
+                  <input type="number" id="total-fees" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row subtotal-row">
+                  <label>Total Taxes</label>
+                  <input type="number" id="total-taxes" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row total-row">
+                  <label>Total Price</label>
+                  <input type="number" id="total-price" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row total-row">
+                  <label>Trade Difference</label>
+                  <input type="number" id="trade-difference" class="era-field" value="0" step="0.01" readonly>
+                </div>
+              </div>
+
+              <!-- Column 2: Down Payment -->
+              <div class="worksheet-column">
+                <div class="column-header">Down Payment</div>
+                <div class="field-row">
+                  <label>Cash Down</label>
+                  <input type="number" id="cash-down" class="era-field highlight-blue" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Deposit</label>
+                  <input type="number" id="deposit" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Total Rebates</label>
+                  <input type="number" id="total-rebates" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Total Trade All</label>
+                  <input type="number" id="total-trade-all" class="era-field highlight-blue" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Total Trade Payoff</label>
+                  <input type="number" id="total-trade-payoff" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row subtotal-row">
+                  <label>Total Net Trade</label>
+                  <input type="number" id="total-net-trade" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row">
+                  <label>Total Def Down</label>
+                  <input type="number" id="total-def-down" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row total-row">
+                  <label>Total Down Payment</label>
+                  <input type="number" id="total-down-payment" class="era-field" value="0" step="0.01" readonly>
+                </div>
+
+                <!-- Metrics Display -->
+                <div class="metrics-box">
+                  <div class="metric-row">
+                    <label>LTV</label>
+                    <span id="ltv-display" class="metric-value">0%</span>
+                  </div>
+                  <div class="metric-row">
+                    <label>PTI</label>
+                    <span id="pti-display" class="metric-value">0%</span>
+                  </div>
+                  <div class="metric-row">
+                    <label>DTI</label>
+                    <span id="dti-display" class="metric-value">0%</span>
+                  </div>
+                  <div class="metric-row">
+                    <label>Credit Tier</label>
+                    <span id="tier-display" class="metric-value">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Column 3: Payment -->
+              <div class="worksheet-column">
+                <div class="column-header">Payment</div>
+                <div class="field-row">
+                  <label>Term</label>
+                  <select id="term" class="era-field era-select-field">
+                    <option value="36">36</option>
+                    <option value="48">48</option>
+                    <option value="60">60</option>
+                    <option value="66">66</option>
+                    <option value="72" selected>72</option>
+                    <option value="75">75</option>
+                    <option value="84">84</option>
+                  </select>
+                </div>
+                <div class="field-row">
+                  <label>Sell Rate</label>
+                  <input type="number" id="sell-rate" class="era-field highlight-blue" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>AOR (Reserve)</label>
+                  <input type="number" id="aor" class="era-field" value="0" step="0.0001" readonly>
+                </div>
+                <div class="field-row">
+                  <label># Days 1st Pmt</label>
+                  <input type="number" id="days-to-first" class="era-field" value="45">
+                </div>
+                <div class="field-row">
+                  <label>Payments/Year</label>
+                  <input type="number" id="payments-per-year" class="era-field" value="12" readonly>
+                </div>
+                <div class="field-row">
+                  <label>1st Payment Date</label>
+                  <input type="date" id="first-payment-date" class="era-field">
+                </div>
+                <div class="field-row">
+                  <label>Prepaid Fin Chrg</label>
+                  <input type="number" id="prepaid-fin-charge" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row subtotal-row">
+                  <label>APR</label>
+                  <input type="number" id="apr-display" class="era-field" value="0" step="0.0001" readonly>
+                </div>
+                <div class="field-row subtotal-row">
+                  <label>Amount Financed</label>
+                  <input type="number" id="amount-financed" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row">
+                  <label>Finance Charge</label>
+                  <input type="number" id="finance-charge" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row">
+                  <label>Total of Payments</label>
+                  <input type="number" id="total-of-payments" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row">
+                  <label>Total Sales Price</label>
+                  <input type="number" id="total-sales-price" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row payment-row">
+                  <label>Payment</label>
+                  <input type="text" id="payment-display" class="era-field payment-field" value="0.00" readonly>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lender Analysis Results -->
+            <div id="lender-analysis" class="lender-analysis" style="display:none;">
+              <h3>Lender Recommendations</h3>
+              <div class="table-container">
+                <table class="data-table" id="lender-table">
+                  <thead>
+                    <tr>
+                      <th>Lender</th>
+                      <th>Buy Rate</th>
+                      <th>Sell Rate</th>
+                      <th>Payment</th>
+                      <th>Reserve</th>
+                      <th>Confidence</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Payment Grid -->
+            <div id="payment-grid-section" class="payment-grid-section" style="display:none;">
+              <h3>Payment Grid</h3>
+              <div class="table-container">
+                <table class="data-table" id="payment-grid">
+                  <thead>
+                    <tr>
+                      <th>APR</th>
+                      <th>48mo</th>
+                      <th>60mo</th>
+                      <th>72mo</th>
+                      <th>84mo</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Auto-Approval Optimizer Tab -->
+      <section id="approval-optimizer" class="tab-content">
+        <div class="optimizer-intro">
+          <h2>Auto-Approval Optimizer</h2>
+          <p>See exactly how to structure deals for automatic lender approval. This tool simulates lender Automated Decisioning Engines (ADEs).</p>
+        </div>
+
+        <div class="form-grid">
+          <!-- Vehicle Section -->
+          <div class="form-section">
+            <h2>Vehicle Information</h2>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ao-year">Year</label>
+                <input type="number" id="ao-year" value="2022" min="2010" max="2026">
+              </div>
+              <div class="form-group">
+                <label for="ao-make">Make</label>
+                <input type="text" id="ao-make" value="GMC">
+              </div>
+              <div class="form-group">
+                <label for="ao-model">Model</label>
+                <input type="text" id="ao-model" placeholder="Sierra 1500">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ao-mileage">Mileage</label>
+                <input type="number" id="ao-mileage" value="35000">
+              </div>
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="ao-certified"> CPO
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Credit Section -->
+          <div class="form-section">
+            <h2>Credit Profile</h2>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ao-credit-score">Credit Score</label>
+                <input type="number" id="ao-credit-score" value="680" min="300" max="850">
+              </div>
+              <div class="form-group">
+                <label for="ao-monthly-income">Monthly Income</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-monthly-income" value="5000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ao-monthly-debt">Monthly Debt</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-monthly-debt" value="500">
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ao-time-on-job">Time on Job (months)</label>
+                <input type="number" id="ao-time-on-job" value="24">
+              </div>
+              <div class="form-group">
+                <label for="ao-time-at-residence">Time at Residence (months)</label>
+                <input type="number" id="ao-time-at-residence" value="24">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="ao-bankruptcy"> Bankruptcy History
+                </label>
+              </div>
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="ao-repo"> Repo History
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deal Structure Section -->
+          <div class="form-section">
+            <h2>Deal Structure</h2>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ao-selling-price">Selling Price</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-selling-price" value="35000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ao-cash-down">Cash Down</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-cash-down" value="2000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ao-term">Term (months)</label>
+                <select id="ao-term">
+                  <option value="48">48</option>
+                  <option value="60">60</option>
+                  <option value="66">66</option>
+                  <option value="72" selected>72</option>
+                  <option value="84">84</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ao-trade-value">Trade Value</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-trade-value" value="0">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ao-trade-payoff">Trade Payoff</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-trade-payoff" value="0">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ao-fi-products">F&I Products</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="ao-fi-products" value="0">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-large" id="run-optimizer">Run Auto-Approval Analysis</button>
+
+        <!-- Optimizer Results -->
+        <div id="optimizer-results" class="results-section" style="display:none;">
+          <!-- FICO Auto Score -->
+          <div class="fico-section">
+            <h2>FICO Auto Score Analysis</h2>
+            <div class="fico-display">
+              <div class="fico-score">
+                <span class="fico-label">Base Score</span>
+                <span class="fico-value" id="fico-base">680</span>
+              </div>
+              <div class="fico-arrow">→</div>
+              <div class="fico-score highlight">
+                <span class="fico-label">FICO Auto Score</span>
+                <span class="fico-value" id="fico-auto">695</span>
+              </div>
+              <div class="risk-tier">
+                <span class="tier-label">Risk Tier</span>
+                <span class="tier-value" id="risk-tier">B</span>
+              </div>
+            </div>
+            <div class="fico-factors" id="fico-factors"></div>
+          </div>
+
+          <!-- Current Metrics -->
+          <div class="metrics-section">
+            <h2>Current Deal Metrics</h2>
+            <div class="metrics-grid">
+              <div class="metric-card" id="metric-ltv">
+                <span class="metric-label">LTV</span>
+                <span class="metric-value">0%</span>
+                <span class="metric-status">-</span>
+              </div>
+              <div class="metric-card" id="metric-pti">
+                <span class="metric-label">PTI</span>
+                <span class="metric-value">0%</span>
+                <span class="metric-status">-</span>
+              </div>
+              <div class="metric-card" id="metric-dti">
+                <span class="metric-label">DTI</span>
+                <span class="metric-value">0%</span>
+                <span class="metric-status">-</span>
+              </div>
+              <div class="metric-card" id="metric-payment">
+                <span class="metric-label">Est. Payment</span>
+                <span class="metric-value">$0</span>
+                <span class="metric-status">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADE Results -->
+          <div class="ade-section">
+            <h2>Lender ADE Decisions</h2>
+            <div class="table-container">
+              <table class="data-table" id="ade-table">
+                <thead>
+                  <tr>
+                    <th>Lender</th>
+                    <th>Decision</th>
+                    <th>Time</th>
+                    <th>Rate</th>
+                    <th>Score</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Auto-Approval Thresholds -->
+          <div class="thresholds-section">
+            <h2>Auto-Approval Thresholds (Hit these for instant approval)</h2>
+            <div class="table-container">
+              <table class="data-table" id="thresholds-table">
+                <thead>
+                  <tr>
+                    <th>Lender</th>
+                    <th>Max LTV</th>
+                    <th>Max PTI</th>
+                    <th>Max DTI</th>
+                    <th>Min Down</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recommendations -->
+          <div class="recommendations-section">
+            <h2>Optimization Recommendations</h2>
+            <div id="recommendations-list"></div>
+          </div>
+
+          <!-- Sweet Spot -->
+          <div class="sweet-spot-section">
+            <h2>Sweet Spot Deal Structure</h2>
+            <div id="sweet-spot-content"></div>
+          </div>
+
+          <!-- Approval Probability -->
+          <div class="probability-section">
+            <h2>Approval Probability</h2>
+            <div class="probability-meters">
+              <div class="probability-meter">
+                <span class="prob-label">Current Structure</span>
+                <div class="progress-bar">
+                  <div class="progress-fill" id="prob-current"></div>
+                </div>
+                <span class="prob-value" id="prob-current-value">0%</span>
+              </div>
+              <div class="probability-meter">
+                <span class="prob-label">If Optimized</span>
+                <div class="progress-bar">
+                  <div class="progress-fill optimized" id="prob-optimized"></div>
+                </div>
+                <span class="prob-value" id="prob-optimized-value">0%</span>
+              </div>
+            </div>
+            <div class="recommendation-summary" id="prob-recommendation"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lenders Tab -->
+      <section id="lenders" class="tab-content">
+        <h2>Configured Lenders</h2>
+        <div class="filter-bar">
+          <label for="tier-filter">Filter by Credit Tier:</label>
+          <select id="tier-filter">
+            <option value="">All Tiers</option>
+            <option value="super-prime">Super-Prime (750+)</option>
+            <option value="prime">Prime (700-749)</option>
+            <option value="near-prime">Near-Prime (650-699)</option>
+            <option value="subprime">Subprime (550-649)</option>
+            <option value="deep-subprime">Deep Subprime (&lt;550)</option>
+          </select>
+        </div>
+        <div id="lenders-list"></div>
+      </section>
+
+      <!-- Calculator Tab -->
+      <section id="calculator" class="tab-content">
+        <h2>Quick Payment Calculator</h2>
+        <div class="calculator-container">
+          <div class="form-section">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="calc-amount">Amount Financed</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input type="number" id="calc-amount" value="25000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="calc-rate">APR (%)</label>
+                <input type="number" id="calc-rate" value="7.99" step="0.01">
+              </div>
+              <div class="form-group">
+                <label for="calc-term">Term (months)</label>
+                <select id="calc-term">
+                  <option value="36">36</option>
+                  <option value="48">48</option>
+                  <option value="60">60</option>
+                  <option value="72" selected>72</option>
+                  <option value="84">84</option>
+                </select>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="calculate-payment">Calculate</button>
+          </div>
+          <div class="calculator-result" id="calc-result" style="display:none;">
+            <div class="result-item">
+              <span class="result-label">Monthly Payment</span>
+              <span class="result-value" id="calc-monthly">$0.00</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Total Interest</span>
+              <span class="result-value" id="calc-interest">$0.00</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Total of Payments</span>
+              <span class="result-value" id="calc-total">$0.00</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Union Park Deal Optimizer &copy; 2025</p>
+    </footer>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,2 +1,337 @@
-# automotive-deal-optimizer
-Advanced deal structuring tool for automotive sales
+# Union Park Deal Optimizer
+
+**Unified Automotive Deal Optimizer & F&I Desking Tool**
+
+A comprehensive deal structuring tool designed to replicate ERA Ignite F&I Desking functionality with intelligent lender matching and approval optimization.
+
+## Features
+
+- **Interactive Deal Desking** - Full F&I workflow with payment calculations
+- **13 Pre-Configured Lenders** - Credit tier requirements, rates, and approval criteria
+- **Smart Lender Matching** - Automatically matches deals to best lenders based on credit profile
+- **Auto-Approval Optimizer** - Mimics lender ADEs to show exactly how to structure deals for automatic approval
+- **FICO Auto Score Simulation** - See the auto-enhanced credit score lenders actually use
+- **ADE Decision Simulation** - Run your deal through all 13 lender decision engines
+- **Payment Grid** - ERA Ignite-style payment matrix across rates and terms
+- **Scenario Comparison** - Compare multiple deal structures side-by-side
+- **What-If Analysis** - Explore how changes affect deal approval
+
+## Configured Lenders
+
+| Lender | Type | Credit Range | Best For |
+|--------|------|--------------|----------|
+| Ally Financial | Full Spectrum | 500-850 | All credit tiers, quick approvals |
+| GM Financial | Captive | 550-850 | GMC/Buick vehicles, CPO programs |
+| Chase Auto | National Bank | 660-850 | Prime/Super-prime customers |
+| Wells Fargo | National Bank | 660-850 | Prime customers, competitive rates |
+| M&T Bank | Regional Bank | 650-850 | Local relationships, flexible |
+| Bank of America | National Bank | 660-850 | Preferred Rewards members |
+| PNC Bank | Regional Bank | 650-850 | Regional customers |
+| Westlake Financial | Subprime | 450-699 | Credit rebuilding, challenged credit |
+| PSECU | Credit Union | 580-850 | Best rates for members |
+| Dexsta FCU | Credit Union | 580-850 | Delaware local members |
+| Citadel Credit Union | Credit Union | 580-850 | PA/DE region members |
+| MECU | Credit Union | 580-850 | Maryland educators |
+| First Help Financial | Deep Subprime | 400-649 | Fresh start, ITIN programs |
+
+## Installation
+
+```bash
+npm install
+npm run build
+```
+
+## Web Application (Recommended for Teams)
+
+The easiest way to share this tool with other managers is through the web application.
+
+### Start the Web Server
+
+```bash
+npm run start:web
+```
+
+This starts the web application at `http://localhost:3000`
+
+### Sharing with Other Managers on Your Network
+
+1. **Find your computer's IP address:**
+   - Windows: Open Command Prompt and run `ipconfig` - look for "IPv4 Address"
+   - Mac: System Preferences > Network - look for your IP address
+
+2. **Start the server with your IP:**
+   ```bash
+   npm run start:web
+   ```
+
+3. **Share the URL with your team:**
+   - Other managers can access it at `http://YOUR_IP_ADDRESS:3000`
+   - Example: `http://192.168.1.100:3000`
+
+4. **Keep the terminal window open** - The server needs to stay running for others to access it
+
+### Web Application Features
+
+The web interface has four main tabs:
+
+| Tab | Description |
+|-----|-------------|
+| **Deal Desk** | Full F&I deal desking - enter vehicle, customer, and deal info to get instant lender recommendations |
+| **Auto-Approval Optimizer** | Run your deal through all 13 lender ADEs to see approval status and optimization tips |
+| **Lenders** | View all configured lenders with their credit requirements and programs |
+| **Calculator** | Quick payment calculator for on-the-fly estimates |
+
+### Deploying Permanently (Optional)
+
+For a permanent deployment that runs 24/7:
+
+**Option 1: Run in background (simple)**
+```bash
+# Linux/Mac
+nohup npm run start:web &
+
+# Or use PM2 for better management
+npm install -g pm2
+pm2 start dist/server/app.js --name "deal-optimizer"
+pm2 save
+```
+
+**Option 2: Deploy to cloud**
+- Works with Heroku, Railway, Render, or any Node.js hosting
+- Set `PORT` environment variable if needed
+- Requires no database - all calculations are done in real-time
+
+## Usage
+
+### Interactive Deal Desk
+
+Start a full interactive deal desking session:
+
+```bash
+npm run dev desk
+# or after building:
+npm start desk
+```
+
+This walks you through:
+1. Vehicle Information (year, make, model, mileage, condition)
+2. Customer Credit Profile (score, income, debt)
+3. Deal Structure (price, trade, down payment)
+4. F&I Products selection
+5. Lender Analysis with recommendations
+
+### Quick Payment Calculator
+
+```bash
+npm run dev calc
+# Or with options:
+npm run dev calc -a 25000 -r 7.99 -t 72
+```
+
+### View Configured Lenders
+
+```bash
+npm run dev lenders
+# Filter by credit tier:
+npm run dev lenders -t subprime
+```
+
+### Credit Tier Guide
+
+```bash
+npm run dev tiers
+```
+
+### Auto-Approval Optimizer (NEW!)
+
+The most powerful feature - see exactly how to structure deals for automatic lender approval:
+
+```bash
+npm start optimize
+# or
+npm start approval
+```
+
+This tool:
+1. **Calculates FICO Auto Score** - The auto-enhanced score lenders actually use
+2. **Runs ADE Simulation** - Tests your deal against all 13 lender decision engines
+3. **Shows Auto-Approval Thresholds** - Exact LTV, PTI, DTI limits for instant approval
+4. **Generates Optimization Plan** - Specific steps to convert conditional to auto-approval
+5. **Finds Sweet Spot** - Optimal deal structure for highest approval probability
+
+## Programmatic Usage
+
+```typescript
+import { analyzeDeal, compareDealScenarios, findOptimalDeal } from './src';
+
+// Quick deal analysis
+const analysis = analyzeDeal({
+  vehicleYear: 2022,
+  vehicleMake: 'GMC',
+  vehicleModel: 'Sierra 1500',
+  vehicleMileage: 35000,
+  certified: true,
+  sellingPrice: 42000,
+  cashDown: 3000,
+  creditScore: 680,
+  monthlyIncome: 5500,
+  requestedTerm: 72,
+});
+
+console.log(analysis.bestLender);
+// { name: 'Ally Financial', apr: 10.99, payment: 654.23, confidence: 'medium' }
+
+// Compare scenarios
+const comparison = compareDealScenarios(
+  { /* base params */ },
+  [
+    { name: 'More Down', changes: { cashDown: 5000 } },
+    { name: 'Longer Term', changes: { requestedTerm: 84 } },
+  ]
+);
+
+// Find optimal deal for target payment
+const optimal = findOptimalDeal({
+  vehicleYear: 2022,
+  vehicleMake: 'GMC',
+  vehicleModel: 'Terrain',
+  vehicleMileage: 28000,
+  sellingPrice: 32000,
+  creditScore: 620,
+  monthlyIncome: 4500,
+  targetPayment: 500,
+});
+
+console.log(optimal.optimal);
+// { cashDown: 3000, term: 72, payment: 498.50, lender: 'Westlake' }
+```
+
+## Credit Tiers
+
+| Tier | Score Range | Typical Rates | Notes |
+|------|-------------|---------------|-------|
+| Super-Prime | 750+ | 5.24% - 6.99% | Best rates, max LTV, any term |
+| Prime | 700-749 | 6.49% - 8.99% | Great rates, high approval |
+| Near-Prime | 650-699 | 8.99% - 12.99% | Good options, some conditions |
+| Subprime | 550-649 | 14.99% - 19.99% | Requires documentation |
+| Deep Subprime | Below 550 | 19.99% - 24.99% | Specialist lenders, high down |
+
+## Key Metrics
+
+The system calculates and evaluates:
+
+- **LTV (Loan to Value)** - Amount financed / Vehicle value
+- **PTI (Payment to Income)** - Monthly payment / Monthly income
+- **DTI (Debt to Income)** - Total monthly debt / Monthly income
+
+Each lender has maximum thresholds for these ratios.
+
+## How Auto-Approval Works
+
+Modern lenders use **Automated Decisioning Engines (ADEs)** that make instant credit decisions. This tool simulates that process:
+
+### What Lenders Evaluate (in order of weight)
+
+1. **Credit Score (40%)** - Uses FICO Auto Score, not standard FICO
+2. **LTV Ratio (25%)** - Most critical structural element
+3. **PTI/DTI Ratios (20%)** - Payment affordability
+4. **Vehicle Factors (10%)** - Age, mileage, value
+5. **Stability (5%)** - Time on job, time at residence
+
+### Auto-Approval Triggers
+
+To get **instant auto-approval**, stay within these general thresholds:
+
+| Score Range | Max LTV | Max PTI | Max DTI | Min Down |
+|-------------|---------|---------|---------|----------|
+| 750+ | 120% | 15% | 40% | 0% |
+| 700-749 | 115% | 14% | 43% | 5% |
+| 650-699 | 110% | 12% | 42% | 10% |
+| 550-649 | 105% | 12% | 45% | 15% |
+| Below 550 | 100% | 10% | 40% | 20% |
+
+### Converting Conditional to Auto-Approval
+
+The optimizer shows exactly what changes convert a conditional approval to auto:
+- Increase down payment to reduce LTV
+- Extend term to lower PTI
+- Pre-submit stipulations (POI, POR) with the deal
+- Add a qualified co-signer
+
+## State Tax Configuration
+
+| State | Sales Tax | Notes |
+|-------|-----------|-------|
+| DE | 0% | No sales tax on vehicles |
+| PA | 6% | Standard rate |
+| MD | 6% | Standard rate |
+| NJ | 6.625% | Standard rate |
+
+## F&I Products Available
+
+- Vehicle Service Contracts (Platinum/Gold/Silver)
+- GAP Insurance
+- Prepaid Maintenance
+- Tire & Wheel Protection
+- Key Replacement
+- Paint & Fabric Protection
+- Theft Deterrent System
+
+## Project Structure
+
+```
+src/
+├── types/              # TypeScript type definitions
+├── config/
+│   └── lenders.ts      # All 13 lender configurations
+├── calculators/
+│   └── payment.ts      # Financial calculations
+├── desking/
+│   └── deal-desk.ts    # Deal desking module
+├── optimizer/
+│   └── lender-matcher.ts   # Lender matching engine
+├── approval/           # Auto-Approval Optimizer
+│   ├── auto-approval-engine.ts   # ADE simulation
+│   ├── deal-structure-optimizer.ts # Deal optimization
+│   └── approval-cli.ts           # Interactive optimizer
+├── inventory/
+│   └── vehicle-manager.ts  # Vehicle/book value management
+├── scenarios/
+│   └── deal-comparison.ts  # Scenario comparison tools
+├── server/             # Web Application Server
+│   ├── app.ts          # Express.js server
+│   └── api.ts          # REST API endpoints
+├── cli.ts              # Command-line interface
+└── index.ts            # Main exports
+
+public/                 # Web Application Frontend
+├── index.html          # Main web interface
+├── css/
+│   └── styles.css      # Application styling
+└── js/
+    └── app.js          # Frontend JavaScript
+```
+
+## Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run build` | Compile TypeScript |
+| `npm run dev` | Run CLI with ts-node |
+| `npm start` | Run compiled CLI |
+| `npm run start:web` | Start the web application server |
+| `npm test` | Run tests |
+
+## Vehicle Support
+
+- All standard makes (GMC, Buick, Chevrolet, Honda, Toyota, Ford, etc.)
+- GM Certified Pre-Owned (rate reductions)
+- Honda Certified Pre-Owned
+- Dealer Certified vehicles
+
+**Excluded from financing:**
+- Audi, BMW, Mercedes-Benz, Lexus, Porsche (luxury exclusions for most lenders)
+
+## License
+
+MIT
