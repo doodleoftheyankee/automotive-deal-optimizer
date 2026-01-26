@@ -36,29 +36,28 @@ export const defaultFees: DealFees = {
   inspectionFee: 0,
   electronicFilingFee: 35,
   dealerConveyanceFee: 0,
-  stateTaxRate: 4.25, // Delaware has no state sales tax on vehicles for residents
+  stateTaxRate: 5.25, // Default to Delaware 5.25%
   localTaxRate: 0,
 };
 
-// Delaware residents: 4.25% document fee in lieu of sales tax
-// PA residents: 6% sales tax (+ local if applicable)
+// State tax rates for Union Park region
 export const stateFeesConfig: Record<string, Partial<DealFees>> = {
   DE: {
-    stateTaxRate: 0, // No sales tax
+    stateTaxRate: 5.25, // Delaware - 5.25%
     docFee: 499,
   },
   PA: {
-    stateTaxRate: 6,
+    stateTaxRate: 6, // Pennsylvania - 6%
     localTaxRate: 0,
     docFee: 499,
   },
   MD: {
-    stateTaxRate: 6,
+    stateTaxRate: 6.5, // Maryland - 6.5%
     localTaxRate: 0,
     docFee: 499,
   },
   NJ: {
-    stateTaxRate: 6.625,
+    stateTaxRate: 6.625, // New Jersey - 6.625%
     localTaxRate: 0,
     docFee: 499,
   },

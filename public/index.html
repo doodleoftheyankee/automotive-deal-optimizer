@@ -21,6 +21,7 @@
     <nav class="tabs">
       <button class="tab active" data-tab="deal-desk">Retail Worksheet</button>
       <button class="tab" data-tab="approval-optimizer">Auto-Approval Optimizer</button>
+      <button class="tab" data-tab="inventory">Inventory</button>
       <button class="tab" data-tab="lenders">Lenders</button>
       <button class="tab" data-tab="calculator">Quick Calculator</button>
     </nav>
@@ -33,6 +34,12 @@
           <!-- Left Sidebar - Vehicle & Deal Info -->
           <div class="era-sidebar">
             <div class="sidebar-section">
+              <div class="sidebar-row">
+                <label>Vehicle</label>
+                <select id="vehicle-selector" class="era-select">
+                  <option value="">-- Select from Inventory --</option>
+                </select>
+              </div>
               <div class="sidebar-row">
                 <label>Stock #</label>
                 <input type="text" id="stock-number" class="era-input" placeholder="T12345">
@@ -669,6 +676,85 @@
               </div>
             </div>
             <div class="recommendation-summary" id="prob-recommendation"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Inventory Tab -->
+      <section id="inventory" class="tab-content">
+        <div class="inventory-header">
+          <h2>Inventory Management</h2>
+          <p>Import your inventory from Reynolds and Reynolds to quickly select vehicles in the worksheet.</p>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="form-section">
+          <h3>Upload Inventory CSV</h3>
+          <p style="margin-bottom: 1rem; color: var(--gray-600); font-size: 0.875rem;">
+            Export your inventory from Reynolds and Reynolds as a CSV file, then paste or upload it here.
+            <br>Required columns: Stock #, Year, Make, Model, MSRP (or Price), Mileage
+          </p>
+          <div class="csv-upload-area">
+            <textarea id="csv-input" class="csv-textarea" placeholder="Paste CSV data here, or use the file upload below...
+
+Example format:
+Stock #,Year,Make,Model,MSRP,Mileage,Condition
+T12345,2024,GMC,TERRAIN,38500,0,New
+U98765,2022,HONDA,ACCORD,28900,32000,Used"></textarea>
+            <div class="upload-controls">
+              <input type="file" id="csv-file" accept=".csv" style="display:none;">
+              <button class="btn btn-secondary" id="btn-choose-file">Choose CSV File</button>
+              <label class="checkbox-label">
+                <input type="checkbox" id="clear-existing"> Clear existing inventory before import
+              </label>
+            </div>
+            <button class="btn btn-primary" id="btn-upload-inventory">Import Inventory</button>
+          </div>
+          <div id="upload-result" class="upload-result" style="display:none;"></div>
+        </div>
+
+        <!-- Current Inventory -->
+        <div class="form-section" style="margin-top: 1.5rem;">
+          <div class="inventory-stats-header">
+            <h3>Current Inventory</h3>
+            <div class="inventory-stats" id="inventory-stats">
+              <span class="stat">Total: <strong>0</strong></span>
+            </div>
+          </div>
+          <div class="inventory-filters">
+            <input type="text" id="inventory-search" class="era-input" placeholder="Search by stock #, make, model..." style="width: 300px;">
+            <select id="inventory-filter" class="era-select" style="width: 150px;">
+              <option value="">All Types</option>
+              <option value="new">New</option>
+              <option value="used">Used</option>
+              <option value="certified">Certified</option>
+            </select>
+            <button class="btn btn-secondary" id="btn-refresh-inventory">Refresh</button>
+            <button class="btn btn-danger" id="btn-clear-inventory" style="margin-left: auto;">Clear All</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table" id="inventory-table">
+              <thead>
+                <tr>
+                  <th>Stock #</th>
+                  <th>Year</th>
+                  <th>Make</th>
+                  <th>Model</th>
+                  <th>Trim</th>
+                  <th>MSRP</th>
+                  <th>Mileage</th>
+                  <th>Type</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="9" style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                    No inventory loaded. Upload a CSV file to get started.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
