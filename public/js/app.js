@@ -30,9 +30,9 @@ document.querySelectorAll('.tab').forEach(tab => {
 
 // State tax rates
 const STATE_TAX_RATES = {
-  'DE': 0,        // Delaware - no sales tax
+  'DE': 0.0525,   // Delaware - 5.25%
   'PA': 0.06,     // Pennsylvania - 6%
-  'MD': 0.06,     // Maryland - 6%
+  'MD': 0.065,    // Maryland - 6.5%
   'NJ': 0.06625   // New Jersey - 6.625%
 };
 
@@ -707,5 +707,345 @@ if (document.querySelector('.tab[data-tab="lenders"]')?.classList.contains('acti
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     calculateWorksheet();
+    loadInventoryForSelector(); // Load inventory into vehicle selector
   }, 100);
+});
+
+// ============================================================================
+// INVENTORY MANAGEMENT
+// ============================================================================
+
+let currentInventory = [];
+
+// File upload button
+document.getElementById('btn-choose-file')?.addEventListener('click', () => {
+  document.getElementById('csv-file')?.click();
+});
+
+// Handle file selection
+document.getElementById('csv-file')?.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      document.getElementById('csv-input').value = event.target.result;
+    };
+    reader.readAsText(file);
+  }
+});
+
+// Upload inventory
+document.getElementById('btn-upload-inventory')?.addEventListener('click', async () => {
+  const csvData = document.getElementById('csv-input')?.value;
+  const clearExisting = document.getElementById('clear-existing')?.checked;
+
+  if (!csvData || csvData.trim().length === 0) {
+    showUploadResult('Please paste CSV data or upload a file first.', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/inventory/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ csvData, clearExisting }),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      const data = result.data;
+      showUploadResult(
+        `Successfully imported ${data.imported} vehicles, updated ${data.updated}. ` +
+        `Total inventory: ${data.totalInventory} (${data.breakdown.new} new, ${data.breakdown.used} used, ${data.breakdown.certified} certified)`,
+        'success'
+      );
+      loadInventory();
+      loadInventoryForSelector();
+    } else {
+      showUploadResult('Error: ' + result.error, 'error');
+    }
+  } catch (error) {
+    console.error('Error uploading inventory:', error);
+    showUploadResult('Error uploading inventory. Please try again.', 'error');
+  }
+});
+
+function showUploadResult(message, type) {
+  const resultEl = document.getElementById('upload-result');
+  if (resultEl) {
+    resultEl.textContent = message;
+    resultEl.className = 'upload-result ' + type;
+    resultEl.style.display = 'block';
+  }
+}
+
+// Load and display inventory
+async function loadInventory() {
+  try {
+    const response = await fetch('/api/inventory');
+    const result = await response.json();
+
+    if (result.success) {
+      currentInventory = result.data.vehicles;
+      displayInventory(currentInventory);
+      updateInventoryStats(result.data.stats);
+    }
+  } catch (error) {
+    console.error('Error loading inventory:', error);
+  }
+}
+
+function displayInventory(vehicles) {
+  const tbody = document.querySelector('#inventory-table tbody');
+  if (!tbody) return;
+
+  if (vehicles.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" style="text-align: center; padding: 2rem; color: var(--gray-500);">
+          No inventory loaded. Upload a CSV file to get started.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = vehicles.map(v => `
+    <tr>
+      <td><strong>${v.stockNumber}</strong></td>
+      <td>${v.year}</td>
+      <td>${v.make}</td>
+      <td>${v.model}</td>
+      <td>${v.trim || '-'}</td>
+      <td>$${(v.msrp || v.sellingPrice || 0).toLocaleString()}</td>
+      <td>${v.mileage?.toLocaleString() || 0}</td>
+      <td><span class="badge badge-${getConditionBadge(v.condition)}">${v.condition}</span></td>
+      <td><button class="btn-use-vehicle" data-stock="${v.stockNumber}">Use</button></td>
+    </tr>
+  `).join('');
+
+  // Add click handlers for "Use" buttons
+  document.querySelectorAll('.btn-use-vehicle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const stockNumber = btn.dataset.stock;
+      selectVehicleFromInventory(stockNumber);
+    });
+  });
+}
+
+function getConditionBadge(condition) {
+  switch (condition) {
+    case 'new': return 'success';
+    case 'certified': return 'info';
+    default: return 'gray';
+  }
+}
+
+function updateInventoryStats(stats) {
+  const statsEl = document.getElementById('inventory-stats');
+  if (statsEl) {
+    statsEl.innerHTML = `
+      <span class="stat">Total: <strong>${stats.total}</strong></span>
+      <span class="stat">New: <strong>${stats.new}</strong></span>
+      <span class="stat">Used: <strong>${stats.used}</strong></span>
+      <span class="stat">Certified: <strong>${stats.certified}</strong></span>
+    `;
+  }
+}
+
+// Search inventory
+document.getElementById('inventory-search')?.addEventListener('input', (e) => {
+  const query = e.target.value.toLowerCase();
+  const filter = document.getElementById('inventory-filter')?.value;
+
+  let filtered = currentInventory;
+
+  if (query) {
+    filtered = filtered.filter(v =>
+      v.stockNumber.toLowerCase().includes(query) ||
+      v.make.toLowerCase().includes(query) ||
+      v.model.toLowerCase().includes(query) ||
+      (v.vin && v.vin.toLowerCase().includes(query))
+    );
+  }
+
+  if (filter) {
+    filtered = filtered.filter(v => v.condition === filter);
+  }
+
+  displayInventory(filtered);
+});
+
+// Filter inventory
+document.getElementById('inventory-filter')?.addEventListener('change', () => {
+  const query = document.getElementById('inventory-search')?.value.toLowerCase() || '';
+  const filter = document.getElementById('inventory-filter')?.value;
+
+  let filtered = currentInventory;
+
+  if (query) {
+    filtered = filtered.filter(v =>
+      v.stockNumber.toLowerCase().includes(query) ||
+      v.make.toLowerCase().includes(query) ||
+      v.model.toLowerCase().includes(query)
+    );
+  }
+
+  if (filter) {
+    filtered = filtered.filter(v => v.condition === filter);
+  }
+
+  displayInventory(filtered);
+});
+
+// Refresh inventory
+document.getElementById('btn-refresh-inventory')?.addEventListener('click', loadInventory);
+
+// Clear inventory
+document.getElementById('btn-clear-inventory')?.addEventListener('click', async () => {
+  if (!confirm('Are you sure you want to clear all inventory? This cannot be undone.')) {
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/inventory', { method: 'DELETE' });
+    const result = await response.json();
+
+    if (result.success) {
+      currentInventory = [];
+      displayInventory([]);
+      updateInventoryStats({ total: 0, new: 0, used: 0, certified: 0 });
+      loadInventoryForSelector();
+    }
+  } catch (error) {
+    console.error('Error clearing inventory:', error);
+  }
+});
+
+// Load inventory for vehicle selector dropdown
+async function loadInventoryForSelector() {
+  try {
+    const response = await fetch('/api/inventory');
+    const result = await response.json();
+
+    if (result.success) {
+      const selector = document.getElementById('vehicle-selector');
+      if (selector) {
+        // Keep the first option
+        selector.innerHTML = '<option value="">-- Select from Inventory --</option>';
+
+        // Add vehicles grouped by condition
+        const vehicles = result.data.vehicles;
+
+        // Group by condition
+        const newVehicles = vehicles.filter(v => v.condition === 'new');
+        const certifiedVehicles = vehicles.filter(v => v.condition === 'certified');
+        const usedVehicles = vehicles.filter(v => v.condition === 'used');
+
+        if (newVehicles.length > 0) {
+          const group = document.createElement('optgroup');
+          group.label = 'New Vehicles';
+          newVehicles.forEach(v => {
+            const option = document.createElement('option');
+            option.value = v.stockNumber;
+            option.textContent = `${v.stockNumber} - ${v.year} ${v.make} ${v.model} ${v.trim || ''} - $${(v.msrp || v.sellingPrice || 0).toLocaleString()}`;
+            group.appendChild(option);
+          });
+          selector.appendChild(group);
+        }
+
+        if (certifiedVehicles.length > 0) {
+          const group = document.createElement('optgroup');
+          group.label = 'Certified Pre-Owned';
+          certifiedVehicles.forEach(v => {
+            const option = document.createElement('option');
+            option.value = v.stockNumber;
+            option.textContent = `${v.stockNumber} - ${v.year} ${v.make} ${v.model} ${v.trim || ''} - $${(v.msrp || v.sellingPrice || 0).toLocaleString()}`;
+            group.appendChild(option);
+          });
+          selector.appendChild(group);
+        }
+
+        if (usedVehicles.length > 0) {
+          const group = document.createElement('optgroup');
+          group.label = 'Used Vehicles';
+          usedVehicles.forEach(v => {
+            const option = document.createElement('option');
+            option.value = v.stockNumber;
+            option.textContent = `${v.stockNumber} - ${v.year} ${v.make} ${v.model} ${v.trim || ''} - $${(v.msrp || v.sellingPrice || 0).toLocaleString()}`;
+            group.appendChild(option);
+          });
+          selector.appendChild(group);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error loading inventory for selector:', error);
+  }
+}
+
+// Vehicle selector change handler
+document.getElementById('vehicle-selector')?.addEventListener('change', (e) => {
+  const stockNumber = e.target.value;
+  if (stockNumber) {
+    selectVehicleFromInventory(stockNumber);
+  }
+});
+
+// Select vehicle from inventory and populate worksheet
+async function selectVehicleFromInventory(stockNumber) {
+  try {
+    const response = await fetch(`/api/inventory/${encodeURIComponent(stockNumber)}`);
+    const result = await response.json();
+
+    if (result.success) {
+      const vehicle = result.data;
+
+      // Populate sidebar fields
+      document.getElementById('stock-number').value = vehicle.stockNumber;
+      document.getElementById('vehicle-year').value = vehicle.year;
+      document.getElementById('vehicle-make').value = vehicle.make;
+      document.getElementById('vehicle-model').value = vehicle.model;
+      document.getElementById('vehicle-trim').value = vehicle.trim || '';
+
+      // Set condition checkboxes
+      document.getElementById('is-used').checked = vehicle.condition === 'used';
+      document.getElementById('is-cert').checked = vehicle.condition === 'certified';
+      document.getElementById('is-demo').checked = false;
+
+      // Populate pricing
+      const msrp = vehicle.msrp || vehicle.sellingPrice || 0;
+      document.getElementById('msrp').value = msrp.toFixed(2);
+
+      // If selling price is different from MSRP, calculate discount
+      if (vehicle.sellingPrice && vehicle.msrp && vehicle.sellingPrice < vehicle.msrp) {
+        document.getElementById('discount').value = (vehicle.msrp - vehicle.sellingPrice).toFixed(2);
+      } else {
+        document.getElementById('discount').value = '0';
+      }
+
+      // Update vehicle selector dropdown
+      document.getElementById('vehicle-selector').value = stockNumber;
+
+      // Recalculate worksheet
+      calculateWorksheet();
+
+      // Switch to Deal Desk tab if on inventory tab
+      const dealDeskTab = document.querySelector('.tab[data-tab="deal-desk"]');
+      if (dealDeskTab && !dealDeskTab.classList.contains('active')) {
+        dealDeskTab.click();
+      }
+
+      // Scroll to top
+      document.querySelector('.worksheet-header')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  } catch (error) {
+    console.error('Error selecting vehicle:', error);
+  }
+}
+
+// Load inventory when switching to inventory tab
+document.querySelector('.tab[data-tab="inventory"]')?.addEventListener('click', () => {
+  loadInventory();
 });

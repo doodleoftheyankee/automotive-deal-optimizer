@@ -22,6 +22,15 @@ import {
   calculatePTI,
   calculateDTI,
 } from '../calculators/payment';
+import {
+  parseInventoryCSV,
+  importInventory,
+  getInventory,
+  getVehicleByStock,
+  searchInventory,
+  clearInventory,
+  getInventoryStats,
+} from '../inventory/inventory-store';
 
 export const apiRouter = Router();
 
@@ -535,6 +544,131 @@ apiRouter.post('/what-if', (req: Request, res: Response) => {
     res.json({
       success: true,
       data: results,
+    });
+  } catch (error: any) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// ============================================================================
+// INVENTORY MANAGEMENT
+// ============================================================================
+
+/**
+ * Upload inventory from CSV
+ */
+apiRouter.post('/inventory/upload', (req: Request, res: Response) => {
+  try {
+    const { csvData, clearExisting } = req.body;
+
+    if (!csvData) {
+      return res.status(400).json({ success: false, error: 'No CSV data provided' });
+    }
+
+    // Clear existing inventory if requested
+    if (clearExisting) {
+      clearInventory();
+    }
+
+    // Parse and import
+    const vehicles = parseInventoryCSV(csvData);
+    const result = importInventory(vehicles);
+
+    const stats = getInventoryStats();
+
+    res.json({
+      success: true,
+      data: {
+        imported: result.imported,
+        updated: result.updated,
+        totalInventory: stats.total,
+        breakdown: {
+          new: stats.new,
+          used: stats.used,
+          certified: stats.certified,
+        },
+        byMake: stats.byMake,
+      },
+    });
+  } catch (error: any) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * Get all inventory
+ */
+apiRouter.get('/inventory', (req: Request, res: Response) => {
+  try {
+    const inventory = getInventory();
+    const stats = getInventoryStats();
+
+    res.json({
+      success: true,
+      data: {
+        vehicles: inventory,
+        stats: {
+          total: stats.total,
+          new: stats.new,
+          used: stats.used,
+          certified: stats.certified,
+          byMake: stats.byMake,
+        },
+      },
+    });
+  } catch (error: any) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * Get vehicle by stock number
+ */
+apiRouter.get('/inventory/:stockNumber', (req: Request, res: Response) => {
+  try {
+    const { stockNumber } = req.params;
+    const vehicle = getVehicleByStock(stockNumber);
+
+    if (!vehicle) {
+      return res.status(404).json({ success: false, error: 'Vehicle not found' });
+    }
+
+    res.json({
+      success: true,
+      data: vehicle,
+    });
+  } catch (error: any) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * Search inventory
+ */
+apiRouter.get('/inventory/search/:query', (req: Request, res: Response) => {
+  try {
+    const { query } = req.params;
+    const results = searchInventory(query);
+
+    res.json({
+      success: true,
+      data: results,
+    });
+  } catch (error: any) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * Clear all inventory
+ */
+apiRouter.delete('/inventory', (req: Request, res: Response) => {
+  try {
+    clearInventory();
+
+    res.json({
+      success: true,
+      data: { message: 'Inventory cleared' },
     });
   } catch (error: any) {
     res.status(400).json({ success: false, error: error.message });
