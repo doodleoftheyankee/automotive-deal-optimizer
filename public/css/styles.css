@@ -1207,6 +1207,633 @@ body {
   background: #047857;
 }
 
+/* ============================================================================
+   LEASE WORKSHEET SPECIFIC STYLES
+   ============================================================================ */
+
+#lease-worksheet .column-header {
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+#lease-worksheet .payment-row {
+  margin-top: 0.5rem;
+}
+
+#lease-worksheet .metrics-box {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1px solid #86efac;
+}
+
+#lease-worksheet .era-field.payment-field {
+  font-size: 1.25rem;
+}
+
+/* ============================================================================
+   PAYMENT TOOLS SECTION
+   ============================================================================ */
+
+.tools-section {
+  margin-top: 2rem;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.tools-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.tools-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.tools-toggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tool-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--gray-300);
+  background: white;
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tool-btn:hover {
+  background: var(--gray-50);
+  border-color: var(--gray-400);
+}
+
+.tool-btn.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.tool-panel {
+  display: none;
+  padding: 1.5rem;
+}
+
+.tool-panel.active {
+  display: block;
+}
+
+.tool-description {
+  color: var(--gray-600);
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Target Payment Calculator */
+.target-calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.target-input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.target-field label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  margin-bottom: 0.5rem;
+}
+
+.big-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--gray-50);
+  border: 2px solid var(--primary-color);
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+}
+
+.big-input-wrapper .currency {
+  font-size: 1.5rem;
+  color: var(--gray-500);
+  padding: 0 0.5rem;
+}
+
+.big-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-align: center;
+  width: 100%;
+}
+
+.big-input:focus {
+  outline: none;
+}
+
+.big-input-wrapper .per-month {
+  font-size: 1rem;
+  color: var(--gray-500);
+  padding: 0 0.5rem;
+}
+
+.target-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.option-group label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  margin-bottom: 0.25rem;
+}
+
+.option-group input,
+.option-group select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+}
+
+.target-result-section {
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+}
+
+.result-card {
+  text-align: center;
+  padding: 1.5rem;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 1rem;
+}
+
+.result-card.main-result {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+}
+
+.result-card .result-label {
+  display: block;
+  font-size: 0.875rem;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+}
+
+.result-card .result-value {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.result-details {
+  background: white;
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 0.875rem;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.target-alternatives {
+  background: white;
+  border-radius: var(--border-radius);
+  padding: 1rem;
+}
+
+.alt-header {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 0.75rem;
+}
+
+.alt-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.alt-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+}
+
+.alt-option .alt-action {
+  color: var(--gray-600);
+}
+
+.alt-option .alt-value {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Multi-Payment Comparison */
+.comparison-controls {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.scenario-card {
+  background: white;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  position: relative;
+}
+
+.scenario-card.add-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  border-style: dashed;
+  cursor: pointer;
+  color: var(--gray-400);
+  transition: all 0.2s;
+}
+
+.scenario-card.add-card:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--gray-50);
+}
+
+.scenario-card .add-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.scenario-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.scenario-name {
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.scenario-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--gray-100);
+  border-radius: 4px;
+  color: var(--gray-600);
+}
+
+.scenario-badge.best {
+  background: var(--success-color);
+  color: white;
+}
+
+.btn-remove-scenario {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: var(--gray-200);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--gray-500);
+  line-height: 1;
+}
+
+.btn-remove-scenario:hover {
+  background: var(--danger-color);
+  color: white;
+}
+
+.scenario-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.scenario-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.scenario-field label {
+  font-size: 0.75rem;
+  color: var(--gray-600);
+}
+
+.scenario-field input,
+.scenario-field select {
+  padding: 0.5rem;
+  border: 1px solid var(--gray-300);
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.scenario-result {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px solid var(--primary-color);
+  text-align: center;
+}
+
+.scenario-payment {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.scenario-payment small {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--gray-500);
+}
+
+.scenario-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+}
+
+.scenario-detail {
+  display: flex;
+  justify-content: space-between;
+  color: var(--gray-600);
+}
+
+.comparison-summary {
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+}
+
+.comparison-summary h4 {
+  margin-bottom: 1rem;
+  color: var(--gray-800);
+}
+
+.comparison-table th,
+.comparison-table td {
+  text-align: center;
+  padding: 0.75rem;
+}
+
+.comparison-table .highlight {
+  background: rgba(22, 163, 74, 0.1);
+  font-weight: 600;
+}
+
+/* Customer Payment Menu */
+.menu-controls {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.payment-menu-display {
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  color: white;
+  min-height: 400px;
+}
+
+.menu-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.menu-header h2 {
+  font-size: 1.5rem;
+  font-weight: 300;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.menu-vehicle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.menu-price {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.menu-price span {
+  font-weight: 600;
+}
+
+.menu-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.menu-placeholder {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  opacity: 0.6;
+}
+
+.menu-option-card {
+  background: rgba(255,255,255,0.1);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.menu-option-card:hover {
+  background: rgba(255,255,255,0.15);
+  transform: translateY(-4px);
+}
+
+.menu-option-card.recommended {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.menu-option-card.recommended::before {
+  content: 'RECOMMENDED';
+  display: block;
+  font-size: 0.625rem;
+  letter-spacing: 1px;
+  color: #22c55e;
+  margin-bottom: 0.5rem;
+}
+
+.menu-term {
+  font-size: 0.875rem;
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
+}
+
+.menu-payment {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.menu-payment-label {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.menu-apr {
+  font-size: 0.875rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+.menu-total {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-top: 0.5rem;
+}
+
+.menu-footer {
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.menu-dealer {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 1;
+}
+
+/* Fullscreen Payment Menu */
+.payment-menu-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.payment-menu-fullscreen .menu-header {
+  margin-bottom: 3rem;
+}
+
+.payment-menu-fullscreen .menu-header h2 {
+  font-size: 2rem;
+}
+
+.payment-menu-fullscreen .menu-vehicle {
+  font-size: 1.75rem;
+}
+
+.payment-menu-fullscreen .menu-options {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  align-items: center;
+}
+
+.payment-menu-fullscreen .menu-option-card {
+  padding: 2rem;
+}
+
+.payment-menu-fullscreen .menu-payment {
+  font-size: 3.5rem;
+}
+
+.btn-close-fullscreen {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.btn-close-fullscreen:hover {
+  background: rgba(255,255,255,0.3);
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
   .worksheet-grid {
