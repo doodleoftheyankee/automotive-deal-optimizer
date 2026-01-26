@@ -167,14 +167,15 @@
           <!-- Main Worksheet Area -->
           <div class="era-main">
             <div class="worksheet-header">
-              <h2>Retail Worksheet</h2>
+              <h2 id="worksheet-title">Retail Worksheet</h2>
               <div class="worksheet-actions">
                 <button class="era-btn" id="btn-calculate">Calculate</button>
                 <button class="era-btn era-btn-primary" id="btn-analyze">Analyze Lenders</button>
               </div>
             </div>
 
-            <div class="worksheet-grid">
+            <!-- RETAIL WORKSHEET -->
+            <div id="retail-worksheet" class="worksheet-grid">
               <!-- Column 1: Sales Price -->
               <div class="worksheet-column">
                 <div class="column-header">Sales Price</div>
@@ -367,6 +368,161 @@
                 <div class="field-row payment-row">
                   <label>Payment</label>
                   <input type="text" id="payment-display" class="era-field payment-field" value="0.00" readonly>
+                </div>
+              </div>
+            </div>
+
+            <!-- LEASE WORKSHEET -->
+            <div id="lease-worksheet" class="worksheet-grid" style="display:none;">
+              <!-- Column 1: Cap Cost -->
+              <div class="worksheet-column">
+                <div class="column-header">Capitalized Cost</div>
+                <div class="field-row">
+                  <label>MSRP</label>
+                  <input type="number" id="lease-msrp" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Discount</label>
+                  <input type="number" id="lease-discount" class="era-field highlight-blue" value="0" step="0.01">
+                </div>
+                <div class="field-row total-row">
+                  <label>Selling Price</label>
+                  <input type="number" id="lease-selling-price" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row">
+                  <label>Acquisition Fee</label>
+                  <input type="number" id="lease-acq-fee" class="era-field" value="650" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Dealer Adds</label>
+                  <input type="number" id="lease-dealer-adds" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Prior Lease Bal</label>
+                  <input type="number" id="lease-prior-bal" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Doc Fee</label>
+                  <input type="number" id="lease-doc-fee" class="era-field" value="499" step="0.01">
+                </div>
+                <div class="field-row subtotal-row">
+                  <label>Title/Reg Fees</label>
+                  <input type="number" id="lease-title-fees" class="era-field" value="250" step="0.01">
+                </div>
+                <div class="field-row total-row">
+                  <label>Gross Cap Cost</label>
+                  <input type="number" id="lease-gross-cap" class="era-field" value="0" step="0.01" readonly>
+                </div>
+              </div>
+
+              <!-- Column 2: Cap Reduction -->
+              <div class="worksheet-column">
+                <div class="column-header">Cap Reduction</div>
+                <div class="field-row">
+                  <label>Cash Down</label>
+                  <input type="number" id="lease-cash-down" class="era-field highlight-blue" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Trade Allowance</label>
+                  <input type="number" id="lease-trade-allow" class="era-field highlight-blue" value="0" step="0.01">
+                </div>
+                <div class="field-row">
+                  <label>Trade Payoff</label>
+                  <input type="number" id="lease-trade-payoff" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row subtotal-row">
+                  <label>Net Trade</label>
+                  <input type="number" id="lease-net-trade" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row">
+                  <label>Rebates</label>
+                  <input type="number" id="lease-rebates" class="era-field" value="0" step="0.01">
+                </div>
+                <div class="field-row total-row">
+                  <label>Total Cap Reduction</label>
+                  <input type="number" id="lease-total-cap-red" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row total-row" style="margin-top: 1rem; border-top: 2px solid var(--primary-color); padding-top: 0.5rem;">
+                  <label>Adjusted Cap Cost</label>
+                  <input type="number" id="lease-adj-cap" class="era-field" value="0" step="0.01" readonly>
+                </div>
+
+                <!-- Lease Metrics -->
+                <div class="metrics-box" style="margin-top: 1rem;">
+                  <div class="metric-row">
+                    <label>% of MSRP</label>
+                    <span id="lease-pct-msrp" class="metric-value">0%</span>
+                  </div>
+                  <div class="metric-row">
+                    <label>MF as APR</label>
+                    <span id="lease-mf-apr" class="metric-value">0%</span>
+                  </div>
+                  <div class="metric-row">
+                    <label>Residual %</label>
+                    <span id="lease-res-pct" class="metric-value">0%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Column 3: Lease Payment -->
+              <div class="worksheet-column">
+                <div class="column-header">Lease Payment</div>
+                <div class="field-row">
+                  <label>Term</label>
+                  <select id="lease-term" class="era-field era-select-field">
+                    <option value="24">24</option>
+                    <option value="27">27</option>
+                    <option value="30">30</option>
+                    <option value="33">33</option>
+                    <option value="36" selected>36</option>
+                    <option value="39">39</option>
+                    <option value="42">42</option>
+                    <option value="48">48</option>
+                  </select>
+                </div>
+                <div class="field-row">
+                  <label>Miles/Year</label>
+                  <select id="lease-miles" class="era-field era-select-field">
+                    <option value="10000">10,000</option>
+                    <option value="12000" selected>12,000</option>
+                    <option value="15000">15,000</option>
+                  </select>
+                </div>
+                <div class="field-row">
+                  <label>Residual %</label>
+                  <input type="number" id="lease-residual-pct" class="era-field highlight-blue" value="55" step="1" min="0" max="100">
+                </div>
+                <div class="field-row subtotal-row">
+                  <label>Residual Value</label>
+                  <input type="number" id="lease-residual-value" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row">
+                  <label>Money Factor</label>
+                  <input type="number" id="lease-money-factor" class="era-field highlight-blue" value="0.00125" step="0.00001">
+                </div>
+                <div class="field-row subtotal-row">
+                  <label>Depreciation</label>
+                  <input type="number" id="lease-depreciation" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row subtotal-row">
+                  <label>Rent Charge</label>
+                  <input type="number" id="lease-rent-charge" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row subtotal-row">
+                  <label>Monthly Tax</label>
+                  <input type="number" id="lease-monthly-tax" class="era-field" value="0" step="0.01" readonly>
+                </div>
+                <div class="field-row payment-row">
+                  <label>Base Payment</label>
+                  <input type="text" id="lease-base-payment" class="era-field" value="0.00" readonly>
+                </div>
+                <div class="field-row payment-row" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));">
+                  <label style="color: white;">Total Payment</label>
+                  <input type="text" id="lease-payment-display" class="era-field payment-field" value="0.00" readonly style="color: white; background: transparent; font-size: 1.5rem;">
+                </div>
+                <div class="field-row" style="margin-top: 0.5rem;">
+                  <label>Due at Signing</label>
+                  <input type="number" id="lease-due-signing" class="era-field" value="0" step="0.01" readonly>
                 </div>
               </div>
             </div>

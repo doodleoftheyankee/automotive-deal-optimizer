@@ -36,6 +36,160 @@ const STATE_TAX_RATES = {
   'NJ': 0.06625   // New Jersey - 6.625%
 };
 
+// ============================================================================
+// DEAL TYPE TOGGLE (Retail / Lease / Cash)
+// ============================================================================
+
+document.getElementById('deal-type')?.addEventListener('change', (e) => {
+  const dealType = e.target.value;
+  const retailWorksheet = document.getElementById('retail-worksheet');
+  const leaseWorksheet = document.getElementById('lease-worksheet');
+  const worksheetTitle = document.getElementById('worksheet-title');
+  const analyzeBtn = document.getElementById('btn-analyze');
+
+  if (dealType === 'lease') {
+    retailWorksheet.style.display = 'none';
+    leaseWorksheet.style.display = 'grid';
+    worksheetTitle.textContent = 'Lease Worksheet';
+    analyzeBtn.style.display = 'none';
+
+    // Sync MSRP from retail to lease
+    const msrp = document.getElementById('msrp')?.value || 0;
+    document.getElementById('lease-msrp').value = msrp;
+
+    // Calculate lease
+    calculateLeaseWorksheet();
+  } else {
+    retailWorksheet.style.display = 'grid';
+    leaseWorksheet.style.display = 'none';
+    worksheetTitle.textContent = dealType === 'cash' ? 'Cash Worksheet' : 'Retail Worksheet';
+    analyzeBtn.style.display = '';
+
+    // Calculate retail
+    calculateWorksheet();
+  }
+});
+
+// ============================================================================
+// LEASE WORKSHEET CALCULATIONS
+// ============================================================================
+
+const leaseInputs = [
+  'lease-msrp', 'lease-discount', 'lease-acq-fee', 'lease-dealer-adds', 'lease-prior-bal',
+  'lease-doc-fee', 'lease-title-fees', 'lease-cash-down', 'lease-trade-allow', 'lease-trade-payoff',
+  'lease-rebates', 'lease-term', 'lease-miles', 'lease-residual-pct', 'lease-money-factor',
+  'customer-state'
+];
+
+// Add event listeners for lease calculation
+leaseInputs.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', calculateLeaseWorksheet);
+    el.addEventListener('change', calculateLeaseWorksheet);
+  }
+});
+
+function calculateLeaseWorksheet() {
+  // Get lease input values
+  const msrp = parseFloat(document.getElementById('lease-msrp')?.value) || 0;
+  const discount = parseFloat(document.getElementById('lease-discount')?.value) || 0;
+  const acqFee = parseFloat(document.getElementById('lease-acq-fee')?.value) || 0;
+  const dealerAdds = parseFloat(document.getElementById('lease-dealer-adds')?.value) || 0;
+  const priorBal = parseFloat(document.getElementById('lease-prior-bal')?.value) || 0;
+  const docFee = parseFloat(document.getElementById('lease-doc-fee')?.value) || 0;
+  const titleFees = parseFloat(document.getElementById('lease-title-fees')?.value) || 0;
+
+  const cashDown = parseFloat(document.getElementById('lease-cash-down')?.value) || 0;
+  const tradeAllow = parseFloat(document.getElementById('lease-trade-allow')?.value) || 0;
+  const tradePayoff = parseFloat(document.getElementById('lease-trade-payoff')?.value) || 0;
+  const rebates = parseFloat(document.getElementById('lease-rebates')?.value) || 0;
+
+  const term = parseInt(document.getElementById('lease-term')?.value) || 36;
+  const residualPct = parseFloat(document.getElementById('lease-residual-pct')?.value) || 55;
+  const moneyFactor = parseFloat(document.getElementById('lease-money-factor')?.value) || 0.00125;
+
+  const state = document.getElementById('customer-state')?.value || 'DE';
+  const taxRate = STATE_TAX_RATES[state] || 0.0525;
+
+  // Calculate selling price
+  const sellingPrice = msrp - discount;
+  document.getElementById('lease-selling-price').value = sellingPrice.toFixed(2);
+
+  // Calculate Gross Cap Cost
+  const grossCapCost = sellingPrice + acqFee + dealerAdds + priorBal + docFee + titleFees;
+  document.getElementById('lease-gross-cap').value = grossCapCost.toFixed(2);
+
+  // Calculate Net Trade
+  const netTrade = tradeAllow - tradePayoff;
+  document.getElementById('lease-net-trade').value = netTrade.toFixed(2);
+
+  // Calculate Total Cap Reduction
+  const totalCapReduction = cashDown + Math.max(0, netTrade) + rebates;
+  document.getElementById('lease-total-cap-red').value = totalCapReduction.toFixed(2);
+
+  // Calculate Adjusted Cap Cost
+  let adjustedCapCost = grossCapCost - totalCapReduction;
+  // Add negative equity if trade is upside down
+  if (netTrade < 0) {
+    adjustedCapCost += Math.abs(netTrade);
+  }
+  document.getElementById('lease-adj-cap').value = adjustedCapCost.toFixed(2);
+
+  // Calculate Residual Value
+  const residualValue = msrp * (residualPct / 100);
+  document.getElementById('lease-residual-value').value = residualValue.toFixed(2);
+
+  // Calculate Depreciation (monthly)
+  const totalDepreciation = adjustedCapCost - residualValue;
+  const monthlyDepreciation = totalDepreciation / term;
+  document.getElementById('lease-depreciation').value = monthlyDepreciation.toFixed(2);
+
+  // Calculate Rent Charge (finance charge portion)
+  const monthlyRentCharge = (adjustedCapCost + residualValue) * moneyFactor;
+  document.getElementById('lease-rent-charge').value = monthlyRentCharge.toFixed(2);
+
+  // Base payment before tax
+  const basePayment = monthlyDepreciation + monthlyRentCharge;
+  document.getElementById('lease-base-payment').value = basePayment.toFixed(2);
+
+  // Calculate monthly tax (on base payment for most states)
+  const monthlyTax = basePayment * taxRate;
+  document.getElementById('lease-monthly-tax').value = monthlyTax.toFixed(2);
+
+  // Total monthly payment
+  const totalPayment = basePayment + monthlyTax;
+  document.getElementById('lease-payment-display').value = totalPayment.toFixed(2);
+
+  // Due at signing (first payment + cap reduction + first month tax)
+  const dueAtSigning = totalPayment + cashDown + (acqFee > 0 ? acqFee : 0);
+  document.getElementById('lease-due-signing').value = dueAtSigning.toFixed(2);
+
+  // Update metrics
+  const pctOfMsrp = msrp > 0 ? (adjustedCapCost / msrp * 100) : 0;
+  const mfAsApr = moneyFactor * 2400;
+
+  document.getElementById('lease-pct-msrp').textContent = pctOfMsrp.toFixed(1) + '%';
+  document.getElementById('lease-mf-apr').textContent = mfAsApr.toFixed(2) + '%';
+  document.getElementById('lease-res-pct').textContent = residualPct.toFixed(0) + '%';
+
+  // Color code metrics
+  const pctEl = document.getElementById('lease-pct-msrp');
+  pctEl.classList.remove('pass', 'warn', 'fail');
+  if (pctOfMsrp <= 100) pctEl.classList.add('pass');
+  else if (pctOfMsrp <= 110) pctEl.classList.add('warn');
+  else pctEl.classList.add('fail');
+
+  return {
+    adjustedCapCost,
+    residualValue,
+    monthlyPayment: totalPayment,
+    term,
+    moneyFactor,
+    residualPct
+  };
+}
+
 // Set today's date
 document.addEventListener('DOMContentLoaded', () => {
   const today = new Date().toISOString().split('T')[0];

@@ -1208,6 +1208,27 @@ body {
 }
 
 /* ============================================================================
+   LEASE WORKSHEET SPECIFIC STYLES
+   ============================================================================ */
+
+#lease-worksheet .column-header {
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+#lease-worksheet .payment-row {
+  margin-top: 0.5rem;
+}
+
+#lease-worksheet .metrics-box {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1px solid #86efac;
+}
+
+#lease-worksheet .era-field.payment-field {
+  font-size: 1.25rem;
+}
+
+/* ============================================================================
    PAYMENT TOOLS SECTION
    ============================================================================ */
 
