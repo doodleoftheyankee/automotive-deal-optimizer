@@ -1,3 +1,5 @@
+(function() {
+'use strict';
 // ============================================================================
 // DEAL OPTIMIZER - FRONTEND APPLICATION
 // ERA IGNITE STYLE INTERFACE
@@ -1903,3 +1905,4 @@ function selectVehicleFromInventory(stockNumber) {
 document.querySelector('.tab[data-tab="inventory"]')?.addEventListener('click', () => {
   loadInventory();
 });
+})(); // end IIFE
